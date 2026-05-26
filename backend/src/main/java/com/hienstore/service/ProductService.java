@@ -17,6 +17,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
+    private final com.hienstore.repository.CategoryRepository categoryRepository;
 
     @Transactional(readOnly = true)
     public Page<ProductDto> getPublishedProducts(Pageable pageable) {
@@ -42,5 +43,52 @@ public class ProductService {
     public Page<ProductDto> searchProducts(String keyword, Pageable pageable) {
         return productRepository.searchProducts(keyword, pageable)
                 .map(productMapper::toDto);
+    }
+
+    @Transactional
+    public ProductDto createProduct(com.hienstore.dto.request.ProductRequest request) {
+        com.hienstore.entity.Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        Product product = Product.builder()
+                .name(request.getName())
+                .slug(request.getSlug())
+                .description(request.getDescription())
+                .basePrice(request.getBasePrice())
+                .category(category)
+                .isPublished(request.getIsPublished() != null ? request.getIsPublished() : true)
+                .build();
+
+        product = productRepository.save(product);
+        return productMapper.toDto(product);
+    }
+
+    @Transactional
+    public ProductDto updateProduct(Long id, com.hienstore.dto.request.ProductRequest request) {
+        Product product = productRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+
+        com.hienstore.entity.Category category = categoryRepository.findById(request.getCategoryId())
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+
+        product.setName(request.getName());
+        product.setSlug(request.getSlug());
+        product.setDescription(request.getDescription());
+        product.setBasePrice(request.getBasePrice());
+        product.setCategory(category);
+        if (request.getIsPublished() != null) {
+            product.setIsPublished(request.getIsPublished());
+        }
+
+        product = productRepository.save(product);
+        return productMapper.toDto(product);
+    }
+
+    @Transactional
+    public void deleteProduct(Long id) {
+        if (!productRepository.existsById(id)) {
+            throw new RuntimeException("Product not found");
+        }
+        productRepository.deleteById(id);
     }
 }
