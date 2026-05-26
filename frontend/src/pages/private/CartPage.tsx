@@ -166,10 +166,12 @@ export const CartPage = () => {
                 </div>
               </div>
               
-              <Button fullWidth size="lg" className="flex items-center justify-center gap-2">
-                Tiến hành thanh toán
-                <ArrowRight size={18} />
-              </Button>
+              <Link to="/checkout" className="block">
+                <Button fullWidth size="lg" className="flex items-center justify-center gap-2">
+                  Tiến hành thanh toán
+                  <ArrowRight size={18} />
+                </Button>
+              </Link>
               
               <div className="mt-6 text-center text-sm text-gray-500">
                 <p>Chúng tôi chấp nhận thanh toán qua VNPay, Momo và thẻ tín dụng.</p>

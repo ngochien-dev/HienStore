@@ -5,6 +5,9 @@ import { RegisterPage } from './pages/auth/RegisterPage'
 import { ProductsPage } from './pages/public/ProductsPage'
 import { ProductDetailPage } from './pages/public/ProductDetailPage'
 import { CartPage } from './pages/private/CartPage'
+import { CheckoutPage } from './pages/private/CheckoutPage'
+import { OrderSuccessPage } from './pages/private/OrderSuccessPage'
+import { OrderHistoryPage } from './pages/private/OrderHistoryPage'
 
 // Temp Home Component
 const Home = () => (
@@ -27,6 +30,9 @@ function App() {
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/product/:slug" element={<ProductDetailPage />} />
         <Route path="/cart" element={<CartPage />} />
+        <Route path="/checkout" element={<CheckoutPage />} />
+        <Route path="/payment-return" element={<OrderSuccessPage />} />
+        <Route path="/orders" element={<OrderHistoryPage />} />
       </Route>
 
       {/* Auth Routes */}

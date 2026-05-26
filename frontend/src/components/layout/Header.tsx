@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { ShoppingCart, User, Menu, X, Sun, Moon, LogOut } from 'lucide-react'
+import { ShoppingCart, User, Menu, X, Sun, Moon, LogOut, Package } from 'lucide-react'
 import { useAppSelector, useAppDispatch } from '../../app/hooks'
 import { logout } from '../../features/auth/authSlice'
 import { fetchCart } from '../../features/cart/cartSlice'
@@ -107,6 +107,9 @@ export const Header = () => {
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
                 <span className="text-sm font-medium">Hi, {user?.fullName || 'User'}</span>
+                <Link to="/orders" className="p-2 text-[var(--color-text-secondary)] hover:text-indigo-600 transition-colors" title="Đơn hàng của tôi">
+                  <Package size={20} />
+                </Link>
                 <button 
                   onClick={() => dispatch(logout())}
                   className="p-2 text-[var(--color-text-secondary)] hover:text-red-500 transition-colors"
