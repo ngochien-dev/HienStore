@@ -25,6 +25,30 @@ export const fetchOrders = createAsyncThunk(
   }
 )
 
+export const fetchAdminOrders = createAsyncThunk(
+  'order/fetchAdminOrders',
+  async ({ page = 0, size = 20 }: { page?: number, size?: number }, { rejectWithValue }) => {
+    try {
+      const response = await api.get(`/api/admin/orders?page=${page}&size=${size}`)
+      return response.data
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message)
+    }
+  }
+)
+
+export const updateOrderStatus = createAsyncThunk(
+  'order/updateOrderStatus',
+  async ({ orderId, status, paymentStatus }: { orderId: number, status?: string, paymentStatus?: string }, { rejectWithValue }) => {
+    try {
+      const response = await api.put(`/api/admin/orders/${orderId}/status`, { status, paymentStatus })
+      return response.data
+    } catch (error: any) {
+      return rejectWithValue(error.response?.data || error.message)
+    }
+  }
+)
+
 interface OrderState {
   orders: any[]
   currentOrder: any | null
@@ -84,9 +108,32 @@ export const orderSlice = createSlice({
           number: action.payload.number
         }
       })
-      .addCase(fetchOrders.rejected, (state, action) => {
+      // fetchAdminOrders
+      .addCase(fetchAdminOrders.pending, (state) => {
+        state.isLoading = true
+        state.error = null
+      })
+      .addCase(fetchAdminOrders.fulfilled, (state, action) => {
+        state.isLoading = false
+        state.orders = action.payload.content
+        state.pageInfo = {
+          totalPages: action.payload.totalPages,
+          totalElements: action.payload.totalElements,
+          size: action.payload.size,
+          number: action.payload.number
+        }
+      })
+      .addCase(fetchAdminOrders.rejected, (state, action) => {
         state.isLoading = false
         state.error = action.payload as string
+      })
+      // updateOrderStatus
+      .addCase(updateOrderStatus.fulfilled, (state, action) => {
+        const updatedOrder = action.payload;
+        const index = state.orders.findIndex(o => o.id === updatedOrder.id);
+        if (index !== -1) {
+          state.orders[index] = updatedOrder;
+        }
       })
   },
 })

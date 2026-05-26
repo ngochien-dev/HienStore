@@ -9,6 +9,12 @@ import { CheckoutPage } from './pages/private/CheckoutPage'
 import { OrderSuccessPage } from './pages/private/OrderSuccessPage'
 import { OrderHistoryPage } from './pages/private/OrderHistoryPage'
 
+// Admin Components
+import { AdminLayout } from './components/layout/AdminLayout'
+import { ProtectedAdminRoute } from './components/routing/ProtectedAdminRoute'
+import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
+import { AdminOrdersPage } from './pages/admin/AdminOrdersPage'
+
 // Temp Home Component
 const Home = () => (
   <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
@@ -24,7 +30,7 @@ const Home = () => (
 function App() {
   return (
     <Routes>
-      {/* Public Routes with UserLayout */}
+      {/* Public & Customer Routes with UserLayout */}
       <Route element={<UserLayout><Outlet /></UserLayout>}>
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<ProductsPage />} />
@@ -33,6 +39,15 @@ function App() {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/payment-return" element={<OrderSuccessPage />} />
         <Route path="/orders" element={<OrderHistoryPage />} />
+      </Route>
+
+      {/* Admin Routes with AdminLayout */}
+      <Route path="/admin" element={<ProtectedAdminRoute />}>
+        <Route element={<AdminLayout><Outlet /></AdminLayout>}>
+          <Route index element={<AdminDashboardPage />} />
+          <Route path="orders" element={<AdminOrdersPage />} />
+          {/* Add more admin routes here later */}
+        </Route>
       </Route>
 
       {/* Auth Routes */}
