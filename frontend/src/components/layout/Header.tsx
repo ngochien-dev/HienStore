@@ -1,10 +1,26 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { ShoppingCart, User, Menu, X, Sun, Moon } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { ShoppingCart, User, Menu, X, Sun, Moon, LogOut } from 'lucide-react'
+import { useAppSelector, useAppDispatch } from '../../app/hooks'
+import { logout } from '../../features/auth/authSlice'
+import { fetchCart } from '../../features/cart/cartSlice'
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
+  const navigate = useNavigate()
+  
+  const dispatch = useAppDispatch()
+  const { isAuthenticated, user } = useAppSelector((state) => state.auth)
+  const { items } = useAppSelector((state) => state.cart)
+  
+  const cartItemsCount = items?.reduce((acc, item) => acc + item.quantity, 0) || 0
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(fetchCart())
+    }
+  }, [isAuthenticated, dispatch])
 
   // Initialize dark mode from localStorage or system preference
   useEffect(() => {
@@ -80,14 +96,31 @@ export const Header = () => {
           
           <Link to="/cart" className="p-2 text-[var(--color-text-secondary)] hover:text-indigo-600 transition-colors relative">
             <ShoppingCart size={24} />
-            <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full">
-              0
-            </span>
+            {cartItemsCount > 0 && (
+              <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full">
+                {cartItemsCount > 9 ? '9+' : cartItemsCount}
+              </span>
+            )}
           </Link>
 
-          <Link to="/login" className="p-2 text-[var(--color-text-secondary)] hover:text-indigo-600 transition-colors hidden md:block">
-            <User size={24} />
-          </Link>
+          <div className="hidden md:flex items-center">
+            {isAuthenticated ? (
+              <div className="flex items-center space-x-4">
+                <span className="text-sm font-medium">Hi, {user?.fullName || 'User'}</span>
+                <button 
+                  onClick={() => dispatch(logout())}
+                  className="p-2 text-[var(--color-text-secondary)] hover:text-red-500 transition-colors"
+                  title="Đăng xuất"
+                >
+                  <LogOut size={20} />
+                </button>
+              </div>
+            ) : (
+              <Link to="/login" className="p-2 text-[var(--color-text-secondary)] hover:text-indigo-600 transition-colors">
+                <User size={24} />
+              </Link>
+            )}
+          </div>
         </div>
       </div>
 

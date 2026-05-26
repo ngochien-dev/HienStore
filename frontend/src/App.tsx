@@ -3,6 +3,7 @@ import { UserLayout } from './components/layout/UserLayout'
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
 import { ProductsPage } from './pages/public/ProductsPage'
+import { CartPage } from './pages/private/CartPage'
 
 // Temp Home Component
 const Home = () => (
@@ -23,7 +24,8 @@ function App() {
       <Route element={<UserLayout><Outlet /></UserLayout>}>
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<ProductsPage />} />
-        {/* We will add more routes here like /product/:slug, /cart */}
+        <Route path="/cart" element={<CartPage />} />
+        {/* We will add more routes here like /product/:slug */}
       </Route>
 
       {/* Auth Routes */}

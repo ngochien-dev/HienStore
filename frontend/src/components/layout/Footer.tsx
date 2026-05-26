@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Facebook, Instagram, Twitter, Mail, Phone, MapPin } from 'lucide-react'
+import { Mail, Phone, MapPin } from 'lucide-react'
 
 export const Footer = () => {
   return (
@@ -16,15 +16,9 @@ export const Footer = () => {
               Thời trang nam nữ cao cấp, chính hãng. Tự tin thể hiện phong cách của bạn với những bộ sưu tập mới nhất từ HienStore.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-indigo-600 transition-colors">
-                <Facebook size={20} />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-pink-600 transition-colors">
-                <Instagram size={20} />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-blue-400 transition-colors">
-                <Twitter size={20} />
-              </a>
+              <span className="text-gray-400 hover:text-indigo-600 transition-colors cursor-pointer">FB</span>
+              <span className="text-gray-400 hover:text-pink-600 transition-colors cursor-pointer">IG</span>
+              <span className="text-gray-400 hover:text-blue-400 transition-colors cursor-pointer">TW</span>
             </div>
           </div>
 
