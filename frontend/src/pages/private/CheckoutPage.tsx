@@ -208,10 +208,10 @@ export const CheckoutPage = () => {
                     <img src={item.productVariant?.imageUrl || 'https://placehold.co/150'} alt="product" className="w-full h-full object-cover" />
                   </div>
                   <div className="flex-1 text-sm">
-                    <h3 className="font-medium line-clamp-2">{item.productVariant?.product?.name}</h3>
+                    <h3 className="font-medium line-clamp-2">{item.productVariant?.productName || item.productVariant?.sku}</h3>
                     <p className="text-gray-500">{item.productVariant?.color} - {item.productVariant?.size}</p>
                     <div className="flex justify-between items-center mt-1">
-                      <span className="font-medium">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.productVariant?.price || item.productVariant?.product?.basePrice)}</span>
+                      <span className="font-medium">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.productVariant?.price || 0)}</span>
                       <span className="text-gray-500">x{item.quantity}</span>
                     </div>
                   </div>

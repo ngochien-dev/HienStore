@@ -83,7 +83,7 @@ export const OrderHistoryPage = () => {
                         <img src={item.productVariant?.imageUrl || 'https://placehold.co/150'} alt="product" className="w-full h-full object-cover" />
                       </div>
                       <div className="flex-1">
-                        <h4 className="font-medium text-sm line-clamp-1">{item.productVariant?.product?.name}</h4>
+                        <h4 className="font-medium text-sm line-clamp-1">{item.productVariant?.productName || item.productVariant?.sku}</h4>
                         <p className="text-xs text-gray-500 mt-1">Phân loại: {item.productVariant?.color} - {item.productVariant?.size}</p>
                         <p className="text-sm mt-1">x{item.quantity}</p>
                       </div>

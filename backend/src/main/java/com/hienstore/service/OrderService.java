@@ -1,6 +1,7 @@
 package com.hienstore.service;
 
 import com.hienstore.dto.request.OrderRequest;
+import com.hienstore.dto.response.DashboardStatsDto;
 import com.hienstore.dto.response.OrderDto;
 import com.hienstore.entity.*;
 import com.hienstore.mapper.OrderMapper;
@@ -12,8 +13,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +27,7 @@ public class OrderService {
     private final CartItemRepository cartItemRepository;
     private final UserRepository userRepository;
     private final ProductVariantRepository productVariantRepository;
+    private final ProductRepository productRepository;
     private final OrderMapper orderMapper;
 
     @Transactional
@@ -135,4 +139,41 @@ public class OrderService {
         
         return orderMapper.toDto(orderRepository.save(order));
     }
+
+    // Dashboard stats
+    @Transactional(readOnly = true)
+    public DashboardStatsDto getDashboardStats() {
+        BigDecimal totalRevenue = orderRepository.sumTotalRevenueExcludingCancelled();
+        long totalOrders = orderRepository.count();
+        long pendingOrders = orderRepository.countByStatus(OrderStatus.PENDING);
+        long deliveredOrders = orderRepository.countByStatus(OrderStatus.DELIVERED);
+        long cancelledOrders = orderRepository.countByStatus(OrderStatus.CANCELLED);
+        long totalCustomers = userRepository.count();
+        long totalProducts = productRepository.count();
+
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
+        List<DashboardStatsDto.RecentOrderDto> recentOrders = orderRepository.findTop10ByOrderByCreatedAtDesc()
+                .stream()
+                .map(order -> DashboardStatsDto.RecentOrderDto.builder()
+                        .id(order.getId())
+                        .customerName(order.getReceiverName())
+                        .totalAmount(order.getTotalAmount())
+                        .status(order.getStatus().name())
+                        .createdAt(order.getCreatedAt() != null ? order.getCreatedAt().format(formatter) : "")
+                        .build())
+                .collect(Collectors.toList());
+
+        return DashboardStatsDto.builder()
+                .totalRevenue(totalRevenue)
+                .totalOrders(totalOrders)
+                .pendingOrders(pendingOrders)
+                .deliveredOrders(deliveredOrders)
+                .cancelledOrders(cancelledOrders)
+                .totalCustomers(totalCustomers)
+                .totalProducts(totalProducts)
+                .recentOrders(recentOrders)
+                .build();
+    }
 }
+

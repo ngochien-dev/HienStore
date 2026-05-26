@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import api from '../../api/axiosClient'
 import { useAppDispatch } from '../../app/hooks'
 import { addToCart } from '../../features/cart/cartSlice'
@@ -8,6 +8,7 @@ import { Loader2, ArrowLeft, Star, ShieldCheck, Truck, Plus, Minus, ShoppingBag,
 export const ProductDetailPage = () => {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
+  const location = useLocation()
   const dispatch = useAppDispatch()
   
   const [product, setProduct] = useState<any>(null)
@@ -43,7 +44,7 @@ export const ProductDetailPage = () => {
     }
 
     if (slug) fetchProduct()
-  }, [slug])
+  }, [slug, location.key])
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type })
