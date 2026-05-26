@@ -103,4 +103,25 @@ public class OrderService {
                 .orElseThrow(() -> new RuntimeException("Order not found or access denied"));
         return orderMapper.toDto(order);
     }
+
+    // Admin methods
+    @Transactional(readOnly = true)
+    public Page<OrderDto> getAllOrders(Pageable pageable) {
+        return orderRepository.findAll(pageable).map(orderMapper::toDto);
+    }
+
+    @Transactional
+    public OrderDto updateOrderStatus(Long orderId, OrderStatus status, PaymentStatus paymentStatus) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        
+        if (status != null) {
+            order.setStatus(status);
+        }
+        if (paymentStatus != null) {
+            order.setPaymentStatus(paymentStatus);
+        }
+        
+        return orderMapper.toDto(orderRepository.save(order));
+    }
 }
