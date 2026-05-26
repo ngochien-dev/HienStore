@@ -245,6 +245,8 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
         variants: generatedVariants
       }
 
+      console.log('Product Form Payload:', payload)
+
       if (product) {
         await api.put(`/api/admin/products/${product.id}`, payload)
       } else {
