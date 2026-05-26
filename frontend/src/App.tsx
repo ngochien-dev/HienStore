@@ -18,7 +18,15 @@ import { AdminProductsPage } from './pages/admin/AdminProductsPage'
 import { AdminCustomersPage } from './pages/admin/AdminCustomersPage'
 import { AdminSettingsPage } from './pages/admin/AdminSettingsPage'
 
+// Public informational components
 import { HomePage } from './pages/public/HomePage'
+import { AboutPage } from './pages/public/AboutPage'
+import { SalesPage } from './pages/public/SalesPage'
+import { BlogPage } from './pages/public/BlogPage'
+import { FaqPage } from './pages/public/FaqPage'
+import { ShippingPolicyPage } from './pages/public/policies/ShippingPolicyPage'
+import { ReturnPolicyPage } from './pages/public/policies/ReturnPolicyPage'
+import { PrivacyPolicyPage } from './pages/public/policies/PrivacyPolicyPage'
 
 function App() {
   return (
@@ -32,6 +40,15 @@ function App() {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/payment-return" element={<OrderSuccessPage />} />
         <Route path="/orders" element={<OrderHistoryPage />} />
+        
+        {/* Informational Subpages */}
+        <Route path="/about" element={<AboutPage />} />
+        <Route path="/sales" element={<SalesPage />} />
+        <Route path="/blog" element={<BlogPage />} />
+        <Route path="/faq" element={<FaqPage />} />
+        <Route path="/policy/shipping" element={<ShippingPolicyPage />} />
+        <Route path="/policy/return" element={<ReturnPolicyPage />} />
+        <Route path="/policy/privacy" element={<PrivacyPolicyPage />} />
       </Route>
 
       {/* Admin Routes with AdminLayout */}
