@@ -28,10 +28,10 @@ public class OrderService {
 
     @Transactional
     public OrderDto createOrder(String username, OrderRequest request) {
-        User user = userRepository.findByUsername(username)
+        User user = userRepository.findByAccountUsername(username)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
-        Cart cart = cartRepository.findByUserUsername(username)
+        Cart cart = cartRepository.findByUserId(user.getId())
                 .orElseThrow(() -> new RuntimeException("Cart not found"));
 
         List<CartItem> cartItems = cart.getItems();
@@ -93,13 +93,13 @@ public class OrderService {
 
     @Transactional(readOnly = true)
     public Page<OrderDto> getUserOrders(String username, Pageable pageable) {
-        return orderRepository.findByUserUsernameOrderByCreatedAtDesc(username, pageable)
+        return orderRepository.findByUserAccountUsernameOrderByCreatedAtDesc(username, pageable)
                 .map(orderMapper::toDto);
     }
 
     @Transactional(readOnly = true)
     public OrderDto getOrderById(Long orderId, String username) {
-        Order order = orderRepository.findByIdAndUserUsername(orderId, username)
+        Order order = orderRepository.findByIdAndUserAccountUsername(orderId, username)
                 .orElseThrow(() -> new RuntimeException("Order not found or access denied"));
         return orderMapper.toDto(order);
     }
