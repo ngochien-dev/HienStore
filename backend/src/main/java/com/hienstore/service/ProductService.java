@@ -18,7 +18,6 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
 
-    @Cacheable(value = "products", key = "#pageable.pageNumber + '-' + #pageable.pageSize + '-' + #pageable.sort.toString()")
     @Transactional(readOnly = true)
     public Page<ProductDto> getPublishedProducts(Pageable pageable) {
         return productRepository.findByIsPublishedTrue(pageable)
