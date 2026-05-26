@@ -67,7 +67,8 @@ public class CategoryService {
                 .orElseThrow(() -> new RuntimeException("Category not found"));
         
         // Soft delete or just toggle isActive
-        category.setIsActive(!category.getIsActive());
+        boolean currentStatus = category.getIsActive() != null ? category.getIsActive() : true;
+        category.setIsActive(!currentStatus);
         categoryRepository.save(category);
     }
 }
