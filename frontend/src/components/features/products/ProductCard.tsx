@@ -15,7 +15,7 @@ export interface ProductCardProps {
 export const ProductCard = ({ product }: ProductCardProps) => {
   const primaryImage = product.images?.find(img => img.isPrimary)?.imageUrl 
     || product.images?.[0]?.imageUrl 
-    || 'https://via.placeholder.com/400x500?text=No+Image'
+    || 'https://placehold.co/400x500/f3f4f6/9ca3af?text=No+Image'
 
   const formattedPrice = new Intl.NumberFormat('vi-VN', {
     style: 'currency',

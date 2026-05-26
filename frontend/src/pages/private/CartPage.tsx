@@ -79,7 +79,7 @@ export const CartPage = () => {
                   <li key={item.id} className="p-6 flex flex-col sm:flex-row gap-6">
                     <div className="shrink-0 w-24 h-24 bg-gray-100 dark:bg-gray-700 rounded-md overflow-hidden">
                       <img 
-                        src={item.productVariant?.imageUrl || 'https://via.placeholder.com/150'} 
+                        src={item.productVariant?.imageUrl || 'https://placehold.co/150'} 
                         alt="Product" 
                         className="w-full h-full object-cover"
                       />
