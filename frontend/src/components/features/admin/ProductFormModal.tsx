@@ -85,7 +85,6 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
         })
         setVariants([])
       }
-      setShowNewCatForm(false)
     }
   }, [isOpen, product])
 
