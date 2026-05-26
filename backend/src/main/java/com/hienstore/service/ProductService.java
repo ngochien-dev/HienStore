@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 @Service
 @RequiredArgsConstructor
@@ -45,6 +46,7 @@ public class ProductService {
                 .map(productMapper::toDto);
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     @Transactional
     public ProductDto createProduct(com.hienstore.dto.request.ProductRequest request) {
         com.hienstore.entity.Category category = categoryRepository.findById(request.getCategoryId())
@@ -111,6 +113,7 @@ public class ProductService {
         return productMapper.toDto(product);
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     @Transactional
     public ProductDto updateProduct(Long id, com.hienstore.dto.request.ProductRequest request) {
         Product product = productRepository.findById(id)
@@ -214,6 +217,7 @@ public class ProductService {
         return productMapper.toDto(product);
     }
 
+    @CacheEvict(value = "products", allEntries = true)
     @Transactional
     public void deleteProduct(Long id) {
         if (!productRepository.existsById(id)) {
