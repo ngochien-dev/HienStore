@@ -40,11 +40,7 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
     stockQuantity: ''
   })
 
-  // New Category inline form states
-  const [showNewCatForm, setShowNewCatForm] = useState(false)
-  const [newCatName, setNewCatName] = useState('')
-  const [newCatDesc, setNewCatDesc] = useState('')
-  const [isSavingCat, setIsSavingCat] = useState(false)
+  // New Category inline form states removed as per user request
 
   useEffect(() => {
     if (isOpen) {
@@ -151,43 +147,6 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
       .trim()
       .replace(/\s+/g, '-') // replace spaces with hyphens
     setFormData(prev => ({ ...prev, slug }))
-  }
-
-  const handleCreateCategory = async (e: React.MouseEvent) => {
-    e.preventDefault()
-    if (!newCatName.trim()) return
-    setIsSavingCat(true)
-    try {
-      const slug = newCatName
-        .toLowerCase()
-        .normalize('NFD').replace(/[\u0300-\u036f]/g, "")
-        .replace(/[^a-z0-9 ]/g, '')
-        .trim()
-        .replace(/\s+/g, '-')
-      
-      const res = await api.post('/api/admin/categories', {
-        name: newCatName.trim(),
-        slug,
-        description: newCatDesc.trim()
-      })
-      
-      // Refresh categories list
-      const catListRes = await api.get('/api/categories')
-      setCategories(catListRes.data)
-      
-      // Auto-select the newly created category
-      setFormData(prev => ({ ...prev, categoryId: res.data.id.toString() }))
-      
-      // Reset form
-      setNewCatName('')
-      setNewCatDesc('')
-      setShowNewCatForm(false)
-    } catch (error) {
-      console.error('Failed to create category:', error)
-      alert('Có lỗi xảy ra khi tạo danh mục mới')
-    } finally {
-      setIsSavingCat(false)
-    }
   }
 
   const handleUploadClick = () => {
@@ -344,61 +303,7 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
                     ))}
                   </select>
                 </div>
-                {!showNewCatForm && (
-                  <button
-                    type="button"
-                    onClick={() => setShowNewCatForm(true)}
-                    className="h-10 px-3.5 flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 rounded-lg hover:bg-indigo-100 hover:text-indigo-700 transition-colors"
-                  >
-                    <FolderPlus size={16} />
-                    <span>Thêm danh mục mới</span>
-                  </button>
-                )}
               </div>
-
-              {/* Dynamic Add Category Sub-form */}
-              {showNewCatForm && (
-                <div className="p-4 rounded-lg bg-white dark:bg-gray-800 border border-indigo-100 dark:border-indigo-900/50 space-y-3 animate-fade-in">
-                  <div className="flex justify-between items-center">
-                    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Danh mục mới</span>
-                    <button type="button" onClick={() => setShowNewCatForm(false)} className="text-gray-400 hover:text-gray-500"><X size={14} /></button>
-                  </div>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <input
-                      type="text"
-                      placeholder="Tên danh mục mới (Vd: Áo Vest)"
-                      value={newCatName}
-                      onChange={(e) => setNewCatName(e.target.value)}
-                      className="flex h-9 w-full rounded-md border border-gray-200 dark:border-gray-700 bg-transparent px-3 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Mô tả danh mục"
-                      value={newCatDesc}
-                      onChange={(e) => setNewCatDesc(e.target.value)}
-                      className="flex h-9 w-full rounded-md border border-gray-200 dark:border-gray-700 bg-transparent px-3 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                    />
-                  </div>
-                  <div className="flex justify-end gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setShowNewCatForm(false)}
-                      className="px-3 py-1.5 text-xs text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
-                    >
-                      Hủy
-                    </button>
-                    <button
-                      type="button"
-                      onClick={handleCreateCategory}
-                      disabled={isSavingCat || !newCatName.trim()}
-                      className="px-3.5 py-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-md flex items-center gap-1 disabled:opacity-50"
-                    >
-                      {isSavingCat && <Loader2 className="animate-spin" size={12} />}
-                      <span>Lưu danh mục</span>
-                    </button>
-                  </div>
-                </div>
-              )}
             </div>
 
             {/* Price & Quantity Row */}
