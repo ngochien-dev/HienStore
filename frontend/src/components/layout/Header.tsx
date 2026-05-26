@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
-import { ShoppingCart, User, Menu, X, Sun, Moon, LogOut, Package } from 'lucide-react'
+import { Link, useLocation } from 'react-router-dom'
+import { ShoppingCart, User, Menu, X, Sun, Moon, LogOut, Package, Shield } from 'lucide-react'
 import { useAppSelector, useAppDispatch } from '../../app/hooks'
 import { logout } from '../../features/auth/authSlice'
 import { fetchCart } from '../../features/cart/cartSlice'
@@ -8,10 +8,12 @@ import { fetchCart } from '../../features/cart/cartSlice'
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
   
   const dispatch = useAppDispatch()
   const { isAuthenticated, user } = useAppSelector((state) => state.auth)
   const { items } = useAppSelector((state) => state.cart)
+  const location = useLocation()
   
   const cartItemsCount = items?.reduce((acc, item) => acc + item.quantity, 0) || 0
 
@@ -20,6 +22,19 @@ export const Header = () => {
       dispatch(fetchCart())
     }
   }, [isAuthenticated, dispatch])
+
+  // Track scroll position to change navbar style
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 10) {
+        setIsScrolled(true)
+      } else {
+        setIsScrolled(false)
+      }
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   // Initialize dark mode from localStorage or system preference
   useEffect(() => {
@@ -52,80 +67,119 @@ export const Header = () => {
   ]
 
   return (
-    <header className="sticky top-0 z-50 w-full transition-all duration-300 glass border-b border-gray-200/50 dark:border-gray-700/50">
-      <div className="container mx-auto px-4 h-16 sm:h-20 flex items-center justify-between">
+    <header 
+      className={`sticky top-0 z-50 w-full transition-all duration-500 ${
+        isScrolled 
+          ? 'glass shadow-premium py-2 sm:py-3 border-b border-slate-100/80 dark:border-slate-800/50' 
+          : 'bg-transparent py-4 sm:py-6 border-b border-transparent'
+      }`}
+    >
+      <div className="container mx-auto px-4 sm:px-6 flex items-center justify-between">
         
         {/* Mobile menu button */}
         <button 
-          className="md:hidden p-2 -ml-2 text-gray-500 hover:text-indigo-600 transition-colors"
+          className="md:hidden p-2 -ml-2 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-all duration-300"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
-          {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          {isMenuOpen ? <X size={22} /> : <Menu size={22} />}
         </button>
 
         {/* Logo */}
         <Link to="/" className="flex items-center space-x-2">
-          <span className="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-cyan-500 bg-clip-text text-transparent">
+          <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-500 bg-clip-text text-transparent tracking-tight font-heading">
             HienStore
           </span>
         </Link>
 
         {/* Desktop Navigation */}
         <nav className="hidden md:flex items-center space-x-8 font-medium">
-          {navLinks.map((link) => (
-            <Link 
-              key={link.path} 
-              to={link.path}
-              className="text-[var(--color-text-secondary)] hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
-            >
-              {link.name}
-            </Link>
-          ))}
+          {navLinks.map((link) => {
+            const isActive = location.pathname === link.path
+            return (
+              <Link 
+                key={link.path} 
+                to={link.path}
+                className={`relative py-1 text-sm tracking-wide transition-all duration-300 font-heading ${
+                  isActive 
+                    ? 'text-indigo-600 dark:text-indigo-400 font-semibold' 
+                    : 'text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400'
+                } group`}
+              >
+                {link.name}
+                <span className={`absolute bottom-0 left-0 h-[2px] bg-indigo-600 dark:bg-indigo-400 transition-all duration-300 ${
+                  isActive ? 'w-full' : 'w-0 group-hover:w-full'
+                }`} />
+              </Link>
+            )
+          })}
         </nav>
 
         {/* Actions */}
-        <div className="flex items-center space-x-4">
+        <div className="flex items-center space-x-1 sm:space-x-3">
+          {/* Dark Mode Toggle */}
           <button 
             onClick={toggleDarkMode}
-            className="p-2 text-[var(--color-text-secondary)] hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
+            className="p-2 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-all duration-300"
             aria-label="Toggle dark mode"
           >
-            {isDarkMode ? <Sun size={20} /> : <Moon size={20} />}
+            {isDarkMode ? <Sun size={20} className="animate-fade-in" /> : <Moon size={20} className="animate-fade-in" />}
           </button>
           
-          <Link to="/cart" className="p-2 text-[var(--color-text-secondary)] hover:text-indigo-600 transition-colors relative">
-            <ShoppingCart size={24} />
+          {/* Cart Icon */}
+          <Link 
+            to="/cart" 
+            className="p-2 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-all duration-300 relative"
+          >
+            <ShoppingCart size={20} />
             {cartItemsCount > 0 && (
-              <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 text-white text-[10px] font-bold flex items-center justify-center rounded-full">
+              <span className="absolute top-1.5 right-1.5 h-4 w-4 bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center rounded-full animate-pulse-slow">
                 {cartItemsCount > 9 ? '9+' : cartItemsCount}
               </span>
             )}
           </Link>
 
-          <div className="hidden md:flex items-center">
+          {/* User Profile / Auth Actions */}
+          <div className="flex items-center">
             {isAuthenticated ? (
-              <div className="flex items-center space-x-4">
-                <span className="text-sm font-medium">Hi, {user?.fullName || 'User'}</span>
+              <div className="flex items-center space-x-1 sm:space-x-3">
+                <span className="text-xs font-semibold text-slate-600 dark:text-slate-300 hidden lg:inline max-w-[120px] truncate">
+                  Hi, {user?.fullName?.split(' ').pop() || 'User'}
+                </span>
                 
                 {user?.role === 'ADMIN' && (
-                  <Link to="/admin" className="p-2 text-indigo-600 hover:text-indigo-800 transition-colors bg-indigo-50 dark:bg-indigo-900/20 rounded-lg flex items-center gap-2" title="Admin Portal">
-                    <span className="text-sm font-semibold hidden sm:inline">Trang Quản Trị</span>
+                  <Link 
+                    to="/admin" 
+                    className="p-2 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 rounded-xl flex items-center gap-1.5 transition-all duration-300" 
+                    title="Trang quản trị"
+                  >
+                    <Shield size={20} />
+                    <span className="text-xs font-bold hidden xl:inline">Quản Trị</span>
                   </Link>
                 )}
-                <Link to="/orders" className="p-2 text-[var(--color-text-secondary)] hover:text-indigo-600 transition-colors" title="Đơn hàng của tôi">
+                
+                <Link 
+                  to="/orders" 
+                  className="p-2 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-all duration-300" 
+                  title="Đơn hàng"
+                >
                   <Package size={20} />
                 </Link>
+                
                 <button 
                   onClick={() => dispatch(logout())}
-                  className="p-2 text-[var(--color-text-secondary)] hover:text-red-500 transition-colors"
+                  className="p-2 text-slate-600 dark:text-slate-300 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-all duration-300"
                   title="Đăng xuất"
                 >
                   <LogOut size={20} />
                 </button>
               </div>
             ) : (
-              <Link to="/login" className="p-2 text-[var(--color-text-secondary)] hover:text-indigo-600 transition-colors">
-                <User size={24} />
+              <Link 
+                to="/login" 
+                className="p-2 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-all duration-300"
+                title="Đăng nhập"
+              >
+                <User size={20} />
               </Link>
             )}
           </div>
@@ -134,25 +188,27 @@ export const Header = () => {
 
       {/* Mobile Navigation */}
       {isMenuOpen && (
-        <div className="md:hidden border-t bg-[var(--color-bg)]">
-          <div className="px-4 py-2 space-y-1">
+        <div className="md:hidden border-t border-slate-100 dark:border-slate-800 bg-white/95 dark:bg-slate-900/95 backdrop-blur-lg animate-fade-in">
+          <div className="px-4 py-4 space-y-2">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
                 to={link.path}
-                className="block px-3 py-2 rounded-md text-base font-medium text-[var(--color-text)] hover:bg-gray-100 dark:hover:bg-gray-800"
+                className="block px-4 py-3 rounded-xl text-base font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300"
                 onClick={() => setIsMenuOpen(false)}
               >
                 {link.name}
               </Link>
             ))}
-            <Link
-              to="/login"
-              className="block px-3 py-2 rounded-md text-base font-medium text-[var(--color-text)] hover:bg-gray-100 dark:hover:bg-gray-800"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Đăng nhập / Đăng ký
-            </Link>
+            {!isAuthenticated && (
+              <Link
+                to="/login"
+                className="block px-4 py-3 rounded-xl text-base font-semibold text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800/60 hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Đăng nhập / Đăng ký
+              </Link>
+            )}
           </div>
         </div>
       )}

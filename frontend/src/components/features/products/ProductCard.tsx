@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ShoppingCart } from 'lucide-react'
+import { Eye, ShoppingBag } from 'lucide-react'
 
 export interface ProductCardProps {
   product: {
@@ -23,38 +23,65 @@ export const ProductCard = ({ product }: ProductCardProps) => {
   }).format(product.basePrice)
 
   return (
-    <div className="group flex flex-col bg-white dark:bg-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-gray-700">
-      <Link to={`/product/${product.slug}`} className="relative aspect-[4/5] overflow-hidden bg-gray-100 dark:bg-gray-700">
-        <img 
-          src={primaryImage} 
-          alt={product.name}
-          className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-500"
-        />
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
-      </Link>
+    <div className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800/80 shadow-sm hover:shadow-premium hover:-translate-y-1.5 transition-all duration-500">
       
-      <div className="p-4 flex flex-col flex-grow">
-        <div className="text-xs text-indigo-600 dark:text-indigo-400 font-medium mb-1">
-          {product.category?.name || 'Category'}
+      {/* Image Section */}
+      <div className="relative aspect-[4/5] overflow-hidden bg-slate-50 dark:bg-slate-950">
+        <Link to={`/product/${product.slug}`} className="block w-full h-full">
+          <img 
+            src={primaryImage} 
+            alt={product.name}
+            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-700 ease-out"
+            loading="lazy"
+          />
+        </Link>
+
+        {/* Hover Action Overlay */}
+        <div className="absolute inset-0 bg-slate-950/20 opacity-0 group-hover:opacity-100 transition-all duration-300 flex items-center justify-center gap-3">
+          <Link 
+            to={`/product/${product.slug}`}
+            className="flex items-center gap-2 px-5 py-2.5 bg-white text-slate-900 rounded-full font-semibold text-xs shadow-lg hover:bg-slate-900 hover:text-white transform translate-y-4 group-hover:translate-y-0 transition-all duration-300"
+          >
+            <Eye size={14} />
+            Xem chi tiết
+          </Link>
         </div>
-        
-        <Link to={`/product/${product.slug}`}>
-          <h3 className="text-gray-900 dark:text-white font-semibold line-clamp-2 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+
+        {/* Category Tag */}
+        {product.category?.name && (
+          <span className="absolute top-3.5 left-3.5 px-3 py-1 text-[10px] font-bold uppercase tracking-wider bg-white/90 dark:bg-slate-900/90 text-slate-800 dark:text-slate-200 rounded-full backdrop-blur-md shadow-sm border border-white/20">
+            {product.category.name}
+          </span>
+        )}
+      </div>
+      
+      {/* Content Section */}
+      <div className="p-4.5 flex flex-col flex-grow">
+        {/* Name */}
+        <Link to={`/product/${product.slug}`} className="mb-2">
+          <h3 className="text-slate-800 dark:text-slate-100 font-semibold text-[15px] leading-snug line-clamp-2 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors duration-300">
             {product.name}
           </h3>
         </Link>
         
-        <div className="mt-auto pt-4 flex items-center justify-between">
-          <span className="text-lg font-bold text-gray-900 dark:text-white">
-            {formattedPrice}
-          </span>
+        {/* Bottom Price & Button */}
+        <div className="mt-auto pt-3.5 border-t border-slate-50 dark:border-slate-800/60 flex items-center justify-between">
+          <div className="flex flex-col">
+            <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">
+              Giá bán
+            </span>
+            <span className="text-base font-bold text-slate-900 dark:text-slate-50">
+              {formattedPrice}
+            </span>
+          </div>
           
-          <button 
-            className="p-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-500 transition-colors"
-            aria-label="Add to cart"
+          <Link
+            to={`/product/${product.slug}`}
+            className="flex items-center justify-center p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/80 text-slate-700 dark:text-slate-300 hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-500 dark:hover:text-white hover:scale-105 active:scale-95 transition-all duration-300"
+            aria-label="Xem sản phẩm"
           >
-            <ShoppingCart size={20} />
-          </button>
+            <ShoppingBag size={18} />
+          </Link>
         </div>
       </div>
     </div>

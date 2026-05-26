@@ -14,7 +14,7 @@ interface ProductFormModalProps {
 export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: ProductFormModalProps) => {
   const [categories, setCategories] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
-  
+
   const [formData, setFormData] = useState({
     name: '',
     slug: '',
@@ -61,7 +61,7 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target as any
     const checked = (e.target as HTMLInputElement).checked
-    
+
     setFormData(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? checked : value
@@ -120,29 +120,29 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Tên sản phẩm *</label>
-                <Input 
-                  name="name" 
-                  value={formData.name} 
-                  onChange={handleChange} 
+                <Input
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
                   onBlur={generateSlug}
-                  required 
+                  required
                   placeholder="Vd: Áo thun nam"
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Đường dẫn (Slug) *</label>
-                <Input 
-                  name="slug" 
-                  value={formData.slug} 
-                  onChange={handleChange} 
-                  required 
+                <Input
+                  name="slug"
+                  value={formData.slug}
+                  onChange={handleChange}
+                  required
                 />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Danh mục *</label>
-                <select 
-                  name="categoryId" 
-                  value={formData.categoryId} 
+                <select
+                  name="categoryId"
+                  value={formData.categoryId}
                   onChange={handleChange}
                   required
                   className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -155,12 +155,12 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-medium">Giá cơ bản (VND) *</label>
-                <Input 
-                  type="number" 
-                  name="basePrice" 
-                  value={formData.basePrice} 
-                  onChange={handleChange} 
-                  required 
+                <Input
+                  type="number"
+                  name="basePrice"
+                  value={formData.basePrice}
+                  onChange={handleChange}
+                  required
                   min="0"
                 />
               </div>
@@ -168,9 +168,9 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Mô tả sản phẩm</label>
-              <textarea 
-                name="description" 
-                value={formData.description} 
+              <textarea
+                name="description"
+                value={formData.description}
                 onChange={handleChange}
                 rows={4}
                 className="flex w-full rounded-md border border-gray-300 dark:border-gray-700 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -178,9 +178,9 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
             </div>
 
             <div className="flex items-center gap-2 pt-2">
-              <input 
-                type="checkbox" 
-                id="isPublished" 
+              <input
+                type="checkbox"
+                id="isPublished"
                 name="isPublished"
                 checked={formData.isPublished}
                 onChange={handleChange}
