@@ -111,7 +111,7 @@ public class OrderService {
     // Admin methods
     @Transactional(readOnly = true)
     public Page<OrderDto> getAllOrders(Pageable pageable) {
-        return orderRepository.findAll(pageable).map(orderMapper::toDto);
+        return orderRepository.findAllWithDetails(pageable).map(orderMapper::toDto);
     }
 
     @Transactional

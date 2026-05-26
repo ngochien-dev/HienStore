@@ -4,6 +4,7 @@ import com.hienstore.entity.Order;
 import com.hienstore.entity.OrderStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
@@ -17,6 +18,11 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Page<Order> findByUserAccountUsernameOrderByCreatedAtDesc(String username, Pageable pageable);
     
     Optional<Order> findByIdAndUserAccountUsername(Long id, String username);
+
+    // Admin: findAll with eager fetching to avoid LazyInitializationException
+    @EntityGraph(attributePaths = {"items", "items.productVariant", "items.productVariant.product", "items.productVariant.product.images"})
+    @Query("SELECT o FROM Order o")
+    Page<Order> findAllWithDetails(Pageable pageable);
 
     // Dashboard queries
     @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.status <> 'CANCELLED'")
