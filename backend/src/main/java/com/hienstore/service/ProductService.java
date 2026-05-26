@@ -59,6 +59,39 @@ public class ProductService {
                 .isPublished(request.getIsPublished() != null ? request.getIsPublished() : true)
                 .build();
 
+        // Save first to generate product ID
+        product = productRepository.save(product);
+
+        // Process images
+        if (request.getImages() != null && !request.getImages().isEmpty()) {
+            java.util.List<com.hienstore.entity.ProductImage> images = new java.util.ArrayList<>();
+            boolean isFirst = true;
+            for (String imgUrl : request.getImages()) {
+                if (imgUrl != null && !imgUrl.trim().isEmpty()) {
+                    images.add(com.hienstore.entity.ProductImage.builder()
+                            .product(product)
+                            .imageUrl(imgUrl.trim())
+                            .isPrimary(isFirst)
+                            .build());
+                    isFirst = false;
+                }
+            }
+            product.setImages(images);
+        }
+
+        // Process default variant / stock quantity
+        Integer stock = request.getStockQuantity() != null ? request.getStockQuantity() : 0;
+        java.util.List<com.hienstore.entity.ProductVariant> variants = new java.util.ArrayList<>();
+        variants.add(com.hienstore.entity.ProductVariant.builder()
+                .product(product)
+                .sku("SKU-" + product.getSlug().toUpperCase() + "-" + System.currentTimeMillis())
+                .color("Freesize")
+                .size("Freesize")
+                .price(product.getBasePrice())
+                .stockQuantity(stock)
+                .build());
+        product.setVariants(variants);
+
         product = productRepository.save(product);
         return productMapper.toDto(product);
     }
@@ -78,6 +111,42 @@ public class ProductService {
         product.setCategory(category);
         if (request.getIsPublished() != null) {
             product.setIsPublished(request.getIsPublished());
+        }
+
+        // Update images
+        if (request.getImages() != null) {
+            product.getImages().clear();
+            boolean isFirst = true;
+            for (String imgUrl : request.getImages()) {
+                if (imgUrl != null && !imgUrl.trim().isEmpty()) {
+                    product.getImages().add(com.hienstore.entity.ProductImage.builder()
+                            .product(product)
+                            .imageUrl(imgUrl.trim())
+                            .isPrimary(isFirst)
+                            .build());
+                    isFirst = false;
+                }
+            }
+        }
+
+        // Update stock
+        if (request.getStockQuantity() != null) {
+            if (product.getVariants() != null && !product.getVariants().isEmpty()) {
+                com.hienstore.entity.ProductVariant variant = product.getVariants().get(0);
+                variant.setStockQuantity(request.getStockQuantity());
+                variant.setPrice(request.getBasePrice());
+            } else {
+                java.util.List<com.hienstore.entity.ProductVariant> variants = new java.util.ArrayList<>();
+                variants.add(com.hienstore.entity.ProductVariant.builder()
+                        .product(product)
+                        .sku("SKU-" + product.getSlug().toUpperCase() + "-" + System.currentTimeMillis())
+                        .color("Freesize")
+                        .size("Freesize")
+                        .price(product.getBasePrice())
+                        .stockQuantity(request.getStockQuantity())
+                        .build());
+                product.setVariants(variants);
+            }
         }
 
         product = productRepository.save(product);

@@ -40,6 +40,26 @@ export const AdminOrdersPage = () => {
     }
   }
 
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'PENDING': return 'Chờ xử lý'
+      case 'PROCESSING': return 'Đang xử lý'
+      case 'SHIPPED': return 'Đang giao hàng'
+      case 'DELIVERED': return 'Đã giao hàng'
+      case 'CANCELLED': return 'Đã hủy'
+      default: return status
+    }
+  }
+
+  const getPaymentStatusLabel = (status: string) => {
+    switch (status) {
+      case 'UNPAID': return 'Chưa thanh toán'
+      case 'PAID': return 'Đã thanh toán'
+      case 'REFUNDED': return 'Đã hoàn tiền'
+      default: return status
+    }
+  }
+
   if (isLoading && orders.length === 0) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -99,15 +119,15 @@ export const AdminOrdersPage = () => {
                         onChange={(e) => setNewStatus(e.target.value)}
                         className="p-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-xs"
                       >
-                        <option value="PENDING">PENDING</option>
-                        <option value="PROCESSING">PROCESSING</option>
-                        <option value="SHIPPED">SHIPPED</option>
-                        <option value="DELIVERED">DELIVERED</option>
-                        <option value="CANCELLED">CANCELLED</option>
+                        <option value="PENDING">Chờ xử lý</option>
+                        <option value="PROCESSING">Đang xử lý</option>
+                        <option value="SHIPPED">Đang giao hàng</option>
+                        <option value="DELIVERED">Đã giao hàng</option>
+                        <option value="CANCELLED">Đã hủy</option>
                       </select>
                     ) : (
                       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${getStatusColor(order.status)}`}>
-                        {order.status}
+                        {getStatusLabel(order.status)}
                       </span>
                     )}
                   </td>
@@ -118,13 +138,13 @@ export const AdminOrdersPage = () => {
                         onChange={(e) => setNewPaymentStatus(e.target.value)}
                         className="p-1 border border-gray-300 dark:border-gray-600 rounded bg-white dark:bg-gray-700 text-xs"
                       >
-                        <option value="UNPAID">UNPAID</option>
-                        <option value="PAID">PAID</option>
-                        <option value="REFUNDED">REFUNDED</option>
+                        <option value="UNPAID">Chưa thanh toán</option>
+                        <option value="PAID">Đã thanh toán</option>
+                        <option value="REFUNDED">Đã hoàn tiền</option>
                       </select>
                     ) : (
                       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${order.paymentStatus === 'PAID' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                        {order.paymentStatus}
+                        {getPaymentStatusLabel(order.paymentStatus)}
                       </span>
                     )}
                   </td>

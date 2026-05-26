@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { X } from 'lucide-react'
+import { X, FolderPlus, Loader2 } from 'lucide-react'
 import { Button } from '../../ui/Button'
 import { Input } from '../../ui/Input'
 import api from '../../../api/axiosClient'
@@ -21,20 +21,32 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
     description: '',
     basePrice: '',
     categoryId: '',
-    isPublished: true
+    isPublished: true,
+    images: '',
+    stockQuantity: ''
   })
+
+  // New Category inline form states
+  const [showNewCatForm, setShowNewCatForm] = useState(false)
+  const [newCatName, setNewCatName] = useState('')
+  const [newCatDesc, setNewCatDesc] = useState('')
+  const [isSavingCat, setIsSavingCat] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
       fetchCategories()
       if (product) {
+        const imgUrls = product.images?.map((img: any) => img.imageUrl).join(', ') || ''
+        const stock = product.variants?.[0]?.stockQuantity?.toString() || '0'
         setFormData({
           name: product.name || '',
           slug: product.slug || '',
           description: product.description || '',
           basePrice: product.basePrice?.toString() || '',
           categoryId: product.category?.id?.toString() || '',
-          isPublished: product.isPublished
+          isPublished: product.isPublished,
+          images: imgUrls,
+          stockQuantity: stock
         })
       } else {
         setFormData({
@@ -43,9 +55,12 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
           description: '',
           basePrice: '',
           categoryId: '',
-          isPublished: true
+          isPublished: true,
+          images: '',
+          stockQuantity: ''
         })
       }
+      setShowNewCatForm(false)
     }
   }, [isOpen, product])
 
@@ -79,14 +94,61 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
     setFormData(prev => ({ ...prev, slug }))
   }
 
+  const handleCreateCategory = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (!newCatName.trim()) return
+    setIsSavingCat(true)
+    try {
+      const slug = newCatName
+        .toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9 ]/g, '')
+        .trim()
+        .replace(/\s+/g, '-')
+      
+      const res = await api.post('/api/admin/categories', {
+        name: newCatName.trim(),
+        slug,
+        description: newCatDesc.trim()
+      })
+      
+      // Refresh categories list
+      const catListRes = await api.get('/api/categories')
+      setCategories(catListRes.data)
+      
+      // Auto-select the newly created category
+      setFormData(prev => ({ ...prev, categoryId: res.data.id.toString() }))
+      
+      // Reset form
+      setNewCatName('')
+      setNewCatDesc('')
+      setShowNewCatForm(false)
+    } catch (error) {
+      console.error('Failed to create category:', error)
+      alert('Có lỗi xảy ra khi tạo danh mục mới')
+    } finally {
+      setIsSavingCat(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
     try {
+      const imgList = formData.images
+        .split(',')
+        .map(url => url.trim())
+        .filter(Boolean)
+
       const payload = {
-        ...formData,
+        name: formData.name,
+        slug: formData.slug,
+        description: formData.description,
+        basePrice: parseFloat(formData.basePrice),
         categoryId: parseInt(formData.categoryId),
-        basePrice: parseFloat(formData.basePrice)
+        isPublished: formData.isPublished,
+        images: imgList,
+        stockQuantity: parseInt(formData.stockQuantity) || 0
       }
 
       if (product) {
@@ -116,7 +178,9 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
         </div>
 
         <div className="p-6 overflow-y-auto flex-1">
-          <form id="product-form" onSubmit={handleSubmit} className="space-y-4">
+          <form id="product-form" onSubmit={handleSubmit} className="space-y-5">
+            
+            {/* General Info Row */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Tên sản phẩm *</label>
@@ -138,21 +202,86 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
                   required
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Danh mục *</label>
-                <select
-                  name="categoryId"
-                  value={formData.categoryId}
-                  onChange={handleChange}
-                  required
-                  className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="">Chọn danh mục</option>
-                  {categories.map(c => (
-                    <option key={c.id} value={c.id}>{c.name}</option>
-                  ))}
-                </select>
+            </div>
+
+            {/* Category selection and Inline Add Category */}
+            <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-slate-100 dark:border-slate-800/80 space-y-4">
+              <div className="flex items-end gap-3">
+                <div className="flex-1 space-y-2">
+                  <label className="text-sm font-medium">Danh mục *</label>
+                  <select
+                    name="categoryId"
+                    value={formData.categoryId}
+                    onChange={handleChange}
+                    required
+                    disabled={showNewCatForm}
+                    className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+                  >
+                    <option value="">Chọn danh mục</option>
+                    {categories.map(c => (
+                      <option key={c.id} value={c.id}>{c.name}</option>
+                    ))}
+                  </select>
+                </div>
+                {!showNewCatForm && (
+                  <button
+                    type="button"
+                    onClick={() => setShowNewCatForm(true)}
+                    className="h-10 px-3.5 flex items-center gap-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 rounded-lg hover:bg-indigo-100 hover:text-indigo-700 transition-colors"
+                  >
+                    <FolderPlus size={16} />
+                    <span>Thêm danh mục mới</span>
+                  </button>
+                )}
               </div>
+
+              {/* Dynamic Add Category Sub-form */}
+              {showNewCatForm && (
+                <div className="p-4 rounded-lg bg-white dark:bg-gray-800 border border-indigo-100 dark:border-indigo-900/50 space-y-3 animate-fade-in">
+                  <div className="flex justify-between items-center">
+                    <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-widest">Danh mục mới</span>
+                    <button type="button" onClick={() => setShowNewCatForm(false)} className="text-gray-400 hover:text-gray-500"><X size={14} /></button>
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <input
+                      type="text"
+                      placeholder="Tên danh mục mới (Vd: Áo Vest)"
+                      value={newCatName}
+                      onChange={(e) => setNewCatName(e.target.value)}
+                      className="flex h-9 w-full rounded-md border border-gray-200 dark:border-gray-700 bg-transparent px-3 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    <input
+                      type="text"
+                      placeholder="Mô tả danh mục"
+                      value={newCatDesc}
+                      onChange={(e) => setNewCatDesc(e.target.value)}
+                      className="flex h-9 w-full rounded-md border border-gray-200 dark:border-gray-700 bg-transparent px-3 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowNewCatForm(false)}
+                      className="px-3 py-1.5 text-xs text-gray-500 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-md"
+                    >
+                      Hủy
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCreateCategory}
+                      disabled={isSavingCat || !newCatName.trim()}
+                      className="px-3.5 py-1.5 text-xs font-semibold bg-indigo-600 hover:bg-indigo-700 text-white rounded-md flex items-center gap-1 disabled:opacity-50"
+                    >
+                      {isSavingCat && <Loader2 className="animate-spin" size={12} />}
+                      <span>Lưu danh mục</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Price & Quantity Row */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-medium">Giá cơ bản (VND) *</label>
                 <Input
@@ -162,22 +291,49 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
                   onChange={handleChange}
                   required
                   min="0"
+                  placeholder="Vd: 150000"
+                />
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Số lượng tồn kho (Tổng số) *</label>
+                <Input
+                  type="number"
+                  name="stockQuantity"
+                  value={formData.stockQuantity}
+                  onChange={handleChange}
+                  required
+                  min="0"
+                  placeholder="Vd: 100"
                 />
               </div>
             </div>
 
+            {/* Images Input */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Hình ảnh sản phẩm (URL)</label>
+              <Input
+                name="images"
+                value={formData.images}
+                onChange={handleChange}
+                placeholder="Vd: https://photo-url-1.jpg, https://photo-url-2.jpg"
+              />
+              <p className="text-[10px] text-gray-400">Có thể nhập nhiều URL hình ảnh ngăn cách nhau bởi dấu phẩy (,)</p>
+            </div>
+
+            {/* Description */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Mô tả sản phẩm</label>
               <textarea
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                rows={4}
+                rows={3}
+                placeholder="Vd: Chất liệu cotton mát mẻ..."
                 className="flex w-full rounded-md border border-gray-300 dark:border-gray-700 bg-transparent px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
 
-            <div className="flex items-center gap-2 pt-2">
+            <div className="flex items-center gap-2 pt-1">
               <input
                 type="checkbox"
                 id="isPublished"
@@ -187,7 +343,7 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
                 className="w-4 h-4 text-indigo-600 rounded border-gray-300 focus:ring-indigo-500"
               />
               <label htmlFor="isPublished" className="text-sm font-medium cursor-pointer">
-                Hiển thị (Công khai)
+                Hiển thị công khai (Cho khách hàng xem)
               </label>
             </div>
           </form>

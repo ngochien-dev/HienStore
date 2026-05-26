@@ -35,7 +35,6 @@ public class ProductRequest {
     private Boolean isPublished;
 
     private List<String> images; // List of image URLs
-    
-    // We will keep variant creation simple for now, maybe omit it from creation and let admin add variants later,
-    // or include it here if needed.
+
+    private Integer stockQuantity; // Default variant stock quantity
 }

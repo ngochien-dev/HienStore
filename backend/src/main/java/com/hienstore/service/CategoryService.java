@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.util.List;
 
@@ -28,6 +29,20 @@ public class CategoryService {
     public CategoryDto getCategoryBySlug(String slug) {
         Category category = categoryRepository.findBySlug(slug)
                 .orElseThrow(() -> new RuntimeException("Category not found"));
+        return categoryMapper.toDto(category);
+    }
+
+    @CacheEvict(value = "categories", allEntries = true)
+    @Transactional
+    public CategoryDto createCategory(com.hienstore.dto.request.CategoryRequest request) {
+        Category category = Category.builder()
+                .name(request.getName())
+                .slug(request.getSlug())
+                .description(request.getDescription())
+                .imageUrl(request.getImageUrl())
+                .isActive(true)
+                .build();
+        category = categoryRepository.save(category);
         return categoryMapper.toDto(category);
     }
 }
