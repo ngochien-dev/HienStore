@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { X, FolderPlus, Loader2, UploadCloud } from 'lucide-react'
+import { X, FolderPlus, Loader2, UploadCloud, Plus, Trash2 } from 'lucide-react'
 import { Button } from '../../ui/Button'
 import { Input } from '../../ui/Input'
 import api from '../../../api/axiosClient'
@@ -11,11 +11,23 @@ interface ProductFormModalProps {
   product?: any // If provided, it's edit mode
 }
 
+interface UIVariant {
+  id?: number
+  color: string
+  size: string
+  sku: string
+  price: string
+  stockQuantity: string
+  imageUrl: string
+}
+
 export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: ProductFormModalProps) => {
   const [categories, setCategories] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [isUploading, setIsUploading] = useState(false)
+
+  const [variants, setVariants] = useState<UIVariant[]>([])
 
   const [formData, setFormData] = useState({
     name: '',
@@ -25,9 +37,7 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
     categoryId: '',
     isPublished: true,
     images: '',
-    stockQuantity: '',
-    colors: '',
-    sizes: ''
+    stockQuantity: ''
   })
 
   // New Category inline form states
@@ -42,11 +52,6 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
       if (product) {
         const imgUrls = product.images?.map((img: any) => img.imageUrl).join(', ') || ''
         const stock = product.variants?.reduce((sum: number, v: any) => sum + (v.stockQuantity || 0), 0)?.toString() || '0'
-        
-        // Extract unique colors and sizes excluding Freesize
-        const uniqueColors = Array.from(new Set(product.variants?.map((v: any) => v.color).filter((c: any) => c && c !== 'Freesize'))) as string[]
-        const uniqueSizes = Array.from(new Set(product.variants?.map((v: any) => v.size).filter((s: any) => s && s !== 'Freesize'))) as string[]
-
         setFormData({
           name: product.name || '',
           slug: product.slug || '',
@@ -55,10 +60,22 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
           categoryId: product.category?.id?.toString() || '',
           isPublished: product.isPublished,
           images: imgUrls,
-          stockQuantity: stock,
-          colors: uniqueColors.join(', '),
-          sizes: uniqueSizes.join(', ')
+          stockQuantity: stock
         })
+
+        if (product.variants && product.variants.length > 0) {
+          setVariants(product.variants.map((v: any) => ({
+            id: v.id,
+            color: v.color || '',
+            size: v.size || '',
+            sku: v.sku || '',
+            price: v.price?.toString() || '',
+            stockQuantity: v.stockQuantity?.toString() || '0',
+            imageUrl: v.imageUrl || ''
+          })))
+        } else {
+          setVariants([])
+        }
       } else {
         setFormData({
           name: '',
@@ -68,14 +85,43 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
           categoryId: '',
           isPublished: true,
           images: '',
-          stockQuantity: '',
-          colors: '',
-          sizes: ''
+          stockQuantity: ''
         })
+        setVariants([])
       }
       setShowNewCatForm(false)
     }
   }, [isOpen, product])
+
+  // Auto calculate total stock from variants
+  useEffect(() => {
+    if (variants.length > 0) {
+      const totalStock = variants.reduce((sum, v) => sum + (parseInt(v.stockQuantity) || 0), 0)
+      setFormData(prev => ({ ...prev, stockQuantity: totalStock.toString() }))
+    }
+  }, [variants])
+
+  const handleAddVariant = () => {
+    setVariants(prev => [
+      ...prev,
+      {
+        color: '',
+        size: '',
+        sku: '',
+        price: '',
+        stockQuantity: '0',
+        imageUrl: ''
+      }
+    ])
+  }
+
+  const handleRemoveVariant = (index: number) => {
+    setVariants(prev => prev.filter((_, i) => i !== index))
+  }
+
+  const handleVariantChange = (index: number, field: keyof UIVariant, value: any) => {
+    setVariants(prev => prev.map((v, i) => i === index ? { ...v, [field]: value } : v))
+  }
 
   const fetchCategories = async () => {
     try {
@@ -201,38 +247,6 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
         .map(url => url.trim())
         .filter(Boolean)
 
-      // Sinh tự động các phân loại từ Màu sắc và Kích cỡ
-      const colorList = formData.colors.split(',').map(c => c.trim()).filter(Boolean)
-      const sizeList = formData.sizes.split(',').map(s => s.trim()).filter(Boolean)
-      
-      const generatedVariants: any[] = []
-      if (colorList.length > 0 || sizeList.length > 0) {
-        const colors = colorList.length > 0 ? colorList : ['Freesize']
-        const sizes = sizeList.length > 0 ? sizeList : ['Freesize']
-        const totalStock = parseInt(formData.stockQuantity) || 0
-        const totalCombinations = colors.length * sizes.length
-        const stockPerVariant = Math.floor(totalStock / totalCombinations)
-        const remainder = totalStock % totalCombinations
-        
-        let count = 0
-        colors.forEach(color => {
-          sizes.forEach(size => {
-            const existing = product?.variants?.find((v: any) => v.color === color && v.size === size)
-            const stock = count === 0 ? stockPerVariant + remainder : stockPerVariant
-            generatedVariants.push({
-              id: existing?.id,
-              color,
-              size,
-              sku: existing?.sku || '',
-              price: parseFloat(formData.basePrice) || 0,
-              stockQuantity: stock,
-              imageUrl: existing?.imageUrl || ''
-            })
-            count++
-          })
-        })
-      }
-
       const payload = {
         name: formData.name,
         slug: formData.slug,
@@ -242,7 +256,15 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
         isPublished: formData.isPublished,
         images: imgList,
         stockQuantity: parseInt(formData.stockQuantity) || 0,
-        variants: generatedVariants
+        variants: variants.map(v => ({
+          id: v.id,
+          color: v.color || 'Freesize',
+          size: v.size || 'Freesize',
+          sku: v.sku,
+          price: v.price ? parseFloat(v.price) : parseFloat(formData.basePrice),
+          stockQuantity: parseInt(v.stockQuantity) || 0,
+          imageUrl: v.imageUrl
+        }))
       }
 
       console.log('Product Form Payload:', payload)
@@ -403,41 +425,88 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
                   required
                   min="0"
                   placeholder="Vd: 100"
+                  disabled={variants.length > 0}
                 />
               </div>
             </div>
 
-            {/* Variants Management Section (Simplified) */}
+            {/* Variants Management Section */}
             <div className="p-4 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/40 space-y-4">
-              <div>
-                <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200">
-                  Phân loại sản phẩm (Màu sắc / Kích cỡ)
-                </h3>
-                <p className="text-[11px] text-gray-500 dark:text-gray-400">
-                  Nhập các tùy chọn màu sắc và kích cỡ. Hệ thống sẽ tự động ghép thành các phiên bản.
-                </p>
+              <div className="flex justify-between items-center">
+                <div>
+                  <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200">
+                    Phân loại sản phẩm (Màu sắc / Kích cỡ)
+                  </h3>
+                  <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                    Nhập màu sắc, kích cỡ và số lượng tồn kho riêng cho từng phân loại.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleAddVariant}
+                  className="px-3 py-1.5 text-xs font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg flex items-center gap-1 transition-colors"
+                >
+                  <Plus size={14} />
+                  <span>Thêm phân loại</span>
+                </button>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Màu sắc (cách nhau bằng dấu phẩy)</label>
-                  <Input
-                    name="colors"
-                    value={formData.colors}
-                    onChange={handleChange}
-                    placeholder="Vd: Đỏ, Xanh, Đen (Để trống nếu chỉ có Freesize)"
-                  />
+              {variants.length > 0 && (
+                <div className="space-y-3 max-h-[300px] overflow-y-auto pr-1">
+                  {variants.map((v, index) => (
+                    <div 
+                      key={index} 
+                      className="p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 flex flex-wrap sm:flex-nowrap gap-3 items-end shadow-sm"
+                    >
+                      <div className="flex-1 min-w-[120px] space-y-1">
+                        <label className="text-[10px] font-semibold text-gray-500">Màu sắc *</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Vd: Đỏ, Xanh"
+                          value={v.color}
+                          onChange={(e) => handleVariantChange(index, 'color', e.target.value)}
+                          className="flex h-8 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-transparent px-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        />
+                      </div>
+                      
+                      <div className="flex-1 min-w-[100px] space-y-1">
+                        <label className="text-[10px] font-semibold text-gray-500">Kích cỡ *</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="Vd: M, L"
+                          value={v.size}
+                          onChange={(e) => handleVariantChange(index, 'size', e.target.value)}
+                          className="flex h-8 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-transparent px-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        />
+                      </div>
+
+                      <div className="w-28 space-y-1">
+                        <label className="text-[10px] font-semibold text-gray-500">Tồn kho *</label>
+                        <input
+                          type="number"
+                          required
+                          min="0"
+                          placeholder="Kho"
+                          value={v.stockQuantity}
+                          onChange={(e) => handleVariantChange(index, 'stockQuantity', e.target.value)}
+                          className="flex h-8 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-transparent px-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        />
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveVariant(index)}
+                        className="h-8 w-8 flex items-center justify-center text-gray-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/20 rounded-md transition-colors border border-gray-200 dark:border-gray-700 shrink-0"
+                        title="Xóa phân loại"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  ))}
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Kích cỡ (cách nhau bằng dấu phẩy)</label>
-                  <Input
-                    name="sizes"
-                    value={formData.sizes}
-                    onChange={handleChange}
-                    placeholder="Vd: M, L, XL (Để trống nếu chỉ có Freesize)"
-                  />
-                </div>
-              </div>
+              )}
             </div>
 
             {/* Images Input & Local Upload */}
