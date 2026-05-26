@@ -3,6 +3,7 @@ import { UserLayout } from './components/layout/UserLayout'
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
 import { ProductsPage } from './pages/public/ProductsPage'
+import { ProductDetailPage } from './pages/public/ProductDetailPage'
 import { CartPage } from './pages/private/CartPage'
 
 // Temp Home Component
@@ -24,8 +25,8 @@ function App() {
       <Route element={<UserLayout><Outlet /></UserLayout>}>
         <Route path="/" element={<Home />} />
         <Route path="/products" element={<ProductsPage />} />
+        <Route path="/product/:slug" element={<ProductDetailPage />} />
         <Route path="/cart" element={<CartPage />} />
-        {/* We will add more routes here like /product/:slug */}
       </Route>
 
       {/* Auth Routes */}
