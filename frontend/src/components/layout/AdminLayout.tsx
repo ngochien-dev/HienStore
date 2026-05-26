@@ -5,7 +5,7 @@ import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { logout } from '../../features/auth/authSlice'
 
 export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const location = useLocation()
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
@@ -28,18 +28,18 @@ export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex text-gray-900 dark:text-gray-100">
       
       {/* Mobile overlay */}
-      {!isSidebarOpen && (
-        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setIsSidebarOpen(true)} />
+      {isSidebarOpen && (
+        <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={() => setIsSidebarOpen(false)} />
       )}
 
       {/* Sidebar */}
-      <div className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-transform duration-300 ease-in-out transform ${isSidebarOpen ? '-translate-x-full lg:translate-x-0' : 'translate-x-0'}`}>
+      <div className={`fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 transition-transform duration-300 ease-in-out transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
         <div className="flex flex-col h-full">
           <div className="h-16 flex items-center justify-between px-4 border-b border-gray-200 dark:border-gray-700">
             <Link to="/admin" className="text-xl font-bold bg-gradient-to-r from-indigo-500 to-cyan-500 bg-clip-text text-transparent">
               HienStore Admin
             </Link>
-            <button className="lg:hidden p-2 text-gray-500" onClick={() => setIsSidebarOpen(true)}>
+            <button className="lg:hidden p-2 text-gray-500" onClick={() => setIsSidebarOpen(false)}>
               <X size={20} />
             </button>
           </div>
@@ -94,7 +94,7 @@ export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
         <header className="h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between px-4 lg:px-8">
           <button 
             className="p-2 text-gray-500 hover:text-gray-900 dark:hover:text-white transition-colors lg:hidden"
-            onClick={() => setIsSidebarOpen(false)}
+            onClick={() => setIsSidebarOpen(true)}
           >
             <Menu size={24} />
           </button>

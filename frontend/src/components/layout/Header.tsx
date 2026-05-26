@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { ShoppingCart, User, Menu, X, Sun, Moon, LogOut, Package } from 'lucide-react'
 import { useAppSelector, useAppDispatch } from '../../app/hooks'
 import { logout } from '../../features/auth/authSlice'
@@ -8,7 +8,6 @@ import { fetchCart } from '../../features/cart/cartSlice'
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isDarkMode, setIsDarkMode] = useState(false)
-  const navigate = useNavigate()
   
   const dispatch = useAppDispatch()
   const { isAuthenticated, user } = useAppSelector((state) => state.auth)

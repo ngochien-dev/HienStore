@@ -5,7 +5,7 @@ import { Loader2, Package, Calendar, MapPin, Phone } from 'lucide-react'
 
 export const OrderHistoryPage = () => {
   const dispatch = useAppDispatch()
-  const { orders, isLoading, pageInfo } = useAppSelector((state) => state.order)
+  const { orders, isLoading } = useAppSelector((state) => state.order)
 
   useEffect(() => {
     dispatch(fetchOrders({ page: 0, size: 20 }))

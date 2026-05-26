@@ -5,7 +5,7 @@ import { Loader2, Search, Edit2 } from 'lucide-react'
 
 export const AdminOrdersPage = () => {
   const dispatch = useAppDispatch()
-  const { orders, isLoading, pageInfo } = useAppSelector((state) => state.order)
+  const { orders, isLoading } = useAppSelector((state) => state.order)
   const [editingOrderId, setEditingOrderId] = useState<number | null>(null)
   const [newStatus, setNewStatus] = useState<string>('')
   const [newPaymentStatus, setNewPaymentStatus] = useState<string>('')

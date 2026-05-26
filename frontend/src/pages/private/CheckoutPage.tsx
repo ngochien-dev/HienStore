@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAppSelector, useAppDispatch } from '../../app/hooks'
-import { createOrder, clearCurrentOrder } from '../../features/order/orderSlice'
+import { createOrder } from '../../features/order/orderSlice'
 import { fetchCart } from '../../features/cart/cartSlice'
 import { Loader2, ArrowLeft, CreditCard, Truck } from 'lucide-react'
 
