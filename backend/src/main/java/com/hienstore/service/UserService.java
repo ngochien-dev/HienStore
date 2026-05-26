@@ -19,7 +19,10 @@ public class UserService {
     private final AccountRepository accountRepository;
 
     @Transactional(readOnly = true)
-    public Page<UserDto> getAllUsers(Pageable pageable) {
+    public Page<UserDto> getAllUsers(String keyword, Pageable pageable) {
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            return userRepository.searchUsers(keyword.trim(), pageable).map(this::mapToDto);
+        }
         return userRepository.findAll(pageable).map(this::mapToDto);
     }
 

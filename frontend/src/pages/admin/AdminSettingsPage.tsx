@@ -6,15 +6,37 @@ import { Input } from '../../components/ui/Input'
 export const AdminSettingsPage = () => {
   const [isLoading, setIsLoading] = useState(false)
   
-  // Basic mock settings for the MVP
+  // Basic settings
   const [settings, setSettings] = useState({
-    storeName: 'HienStore',
-    storeEmail: 'contact@hienstore.com',
-    storePhone: '0123456789',
-    storeAddress: '123 Đường Fashion, Quận 1, TP.HCM',
-    facebookUrl: 'https://facebook.com/hienstore',
-    instagramUrl: 'https://instagram.com/hienstore'
+    storeName: '',
+    storeEmail: '',
+    storePhone: '',
+    storeAddress: '',
+    facebookUrl: '',
+    instagramUrl: ''
   })
+
+  useEffect(() => {
+    fetchSettings()
+  }, [])
+
+  const fetchSettings = async () => {
+    try {
+      const { data } = await api.get('/api/admin/settings')
+      if (data && Object.keys(data).length > 0) {
+        setSettings({
+          storeName: data.storeName || '',
+          storeEmail: data.storeEmail || '',
+          storePhone: data.storePhone || '',
+          storeAddress: data.storeAddress || '',
+          facebookUrl: data.facebookUrl || '',
+          instagramUrl: data.instagramUrl || ''
+        })
+      }
+    } catch (error) {
+      console.error('Failed to load settings', error)
+    }
+  }
 
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: '',
@@ -36,14 +58,17 @@ export const AdminSettingsPage = () => {
     })
   }
 
-  const handleSaveSettings = (e: React.FormEvent) => {
+  const handleSaveSettings = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false)
+    try {
+      await api.put('/api/admin/settings', settings)
       alert('Đã lưu cấu hình thành công!')
-    }, 1000)
+    } catch (error) {
+      alert('Lưu cấu hình thất bại!')
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleSavePassword = (e: React.FormEvent) => {

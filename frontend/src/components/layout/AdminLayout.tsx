@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { LayoutDashboard, ShoppingBag, Users, Package, Settings, LogOut, Menu, X } from 'lucide-react'
+import { LayoutDashboard, ShoppingBag, Users, Package, Settings, LogOut, Menu, X, List } from 'lucide-react'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { logout } from '../../features/auth/authSlice'
 
@@ -15,6 +15,7 @@ export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     { name: 'Tổng quan', href: '/admin', icon: LayoutDashboard },
     { name: 'Đơn hàng', href: '/admin/orders', icon: ShoppingBag },
     { name: 'Sản phẩm', href: '/admin/products', icon: Package },
+    { name: 'Danh mục', href: '/admin/categories', icon: List },
     { name: 'Khách hàng', href: '/admin/customers', icon: Users },
     { name: 'Cài đặt', href: '/admin/settings', icon: Settings },
   ]

@@ -10,15 +10,22 @@ export const AdminCustomersPage = () => {
   const [totalPages, setTotalPages] = useState(0)
 
   useEffect(() => {
-    fetchUsers()
-  }, [page])
+    const timer = setTimeout(() => {
+      fetchUsers()
+    }, 500)
+    return () => clearTimeout(timer)
+  }, [page, searchTerm])
 
   const fetchUsers = async () => {
     setIsLoading(true)
     try {
-      // In a real app, we'd add search to the backend. 
-      // For now we just get the page.
-      const response = await api.get('/api/admin/users', { params: { page, size: 10 } })
+      const response = await api.get('/api/admin/users', { 
+        params: { 
+          page, 
+          size: 10,
+          keyword: searchTerm || undefined
+        } 
+      })
       setUsers(response.data.content)
       setTotalPages(response.data.totalPages)
     } catch (error) {
@@ -38,13 +45,7 @@ export const AdminCustomersPage = () => {
     }
   }
 
-  // Filter in memory for MVP
-  const filteredUsers = users.filter(user => 
-    user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.lastName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.phone?.includes(searchTerm)
-  )
+  const filteredUsers = users // We no longer filter in memory
 
   const getUserTypeColor = (type: string) => {
     switch(type) {

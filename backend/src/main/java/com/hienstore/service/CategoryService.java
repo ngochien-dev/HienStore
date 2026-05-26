@@ -45,4 +45,29 @@ public class CategoryService {
         category = categoryRepository.save(category);
         return categoryMapper.toDto(category);
     }
+    @CacheEvict(value = "categories", allEntries = true)
+    @Transactional
+    public CategoryDto updateCategory(Long id, com.hienstore.dto.request.CategoryRequest request) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+        
+        category.setName(request.getName());
+        category.setSlug(request.getSlug());
+        category.setDescription(request.getDescription());
+        category.setImageUrl(request.getImageUrl());
+        
+        category = categoryRepository.save(category);
+        return categoryMapper.toDto(category);
+    }
+
+    @CacheEvict(value = "categories", allEntries = true)
+    @Transactional
+    public void deleteCategory(Long id) {
+        Category category = categoryRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Category not found"));
+        
+        // Soft delete or just toggle isActive
+        category.setIsActive(!category.getIsActive());
+        categoryRepository.save(category);
+    }
 }
