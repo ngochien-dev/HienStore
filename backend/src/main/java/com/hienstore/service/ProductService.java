@@ -145,7 +145,7 @@ public class ProductService {
         }
 
         // Update variants / stock
-        if (request.getVariants() != null) {
+        if (request.getVariants() != null && !request.getVariants().isEmpty()) {
             java.util.List<com.hienstore.entity.ProductVariant> currentVariants = product.getVariants();
             java.util.List<com.hienstore.entity.ProductVariant> toKeep = new java.util.ArrayList<>();
 
