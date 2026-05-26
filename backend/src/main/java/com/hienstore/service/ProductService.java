@@ -79,17 +79,32 @@ public class ProductService {
             product.setImages(images);
         }
 
-        // Process default variant / stock quantity
-        Integer stock = request.getStockQuantity() != null ? request.getStockQuantity() : 0;
+        // Process variants / stock quantity
         java.util.List<com.hienstore.entity.ProductVariant> variants = new java.util.ArrayList<>();
-        variants.add(com.hienstore.entity.ProductVariant.builder()
-                .product(product)
-                .sku("SKU-" + product.getSlug().toUpperCase() + "-" + System.currentTimeMillis())
-                .color("Freesize")
-                .size("Freesize")
-                .price(product.getBasePrice())
-                .stockQuantity(stock)
-                .build());
+        if (request.getVariants() != null && !request.getVariants().isEmpty()) {
+            for (com.hienstore.dto.request.ProductVariantRequest vr : request.getVariants()) {
+                String sku = (vr.getSku() != null && !vr.getSku().trim().isEmpty()) ? vr.getSku() : "SKU-" + product.getSlug().toUpperCase() + "-" + (vr.getColor() != null ? vr.getColor().toUpperCase() : "FS") + "-" + (vr.getSize() != null ? vr.getSize().toUpperCase() : "FS") + "-" + System.currentTimeMillis();
+                variants.add(com.hienstore.entity.ProductVariant.builder()
+                        .product(product)
+                        .color(vr.getColor() != null && !vr.getColor().trim().isEmpty() ? vr.getColor() : "Freesize")
+                        .size(vr.getSize() != null && !vr.getSize().trim().isEmpty() ? vr.getSize() : "Freesize")
+                        .sku(sku)
+                        .price(vr.getPrice() != null ? vr.getPrice() : product.getBasePrice())
+                        .stockQuantity(vr.getStockQuantity() != null ? vr.getStockQuantity() : 0)
+                        .imageUrl(vr.getImageUrl())
+                        .build());
+            }
+        } else {
+            Integer stock = request.getStockQuantity() != null ? request.getStockQuantity() : 0;
+            variants.add(com.hienstore.entity.ProductVariant.builder()
+                    .product(product)
+                    .sku("SKU-" + product.getSlug().toUpperCase() + "-" + System.currentTimeMillis())
+                    .color("Freesize")
+                    .size("Freesize")
+                    .price(product.getBasePrice())
+                    .stockQuantity(stock)
+                    .build());
+        }
         product.setVariants(variants);
 
         product = productRepository.save(product);
@@ -129,8 +144,54 @@ public class ProductService {
             }
         }
 
-        // Update stock
-        if (request.getStockQuantity() != null) {
+        // Update variants / stock
+        if (request.getVariants() != null) {
+            java.util.List<com.hienstore.entity.ProductVariant> currentVariants = product.getVariants();
+            java.util.List<com.hienstore.entity.ProductVariant> toKeep = new java.util.ArrayList<>();
+
+            for (com.hienstore.dto.request.ProductVariantRequest vr : request.getVariants()) {
+                com.hienstore.entity.ProductVariant variant = null;
+                if (vr.getId() != null) {
+                    variant = currentVariants.stream()
+                            .filter(v -> v.getId().equals(vr.getId()))
+                            .findFirst()
+                            .orElse(null);
+                }
+
+                if (variant == null) {
+                    String sku = (vr.getSku() != null && !vr.getSku().trim().isEmpty()) ? vr.getSku() : "SKU-" + product.getSlug().toUpperCase() + "-" + (vr.getColor() != null ? vr.getColor().toUpperCase() : "FS") + "-" + (vr.getSize() != null ? vr.getSize().toUpperCase() : "FS") + "-" + System.currentTimeMillis();
+                    variant = com.hienstore.entity.ProductVariant.builder()
+                            .product(product)
+                            .color(vr.getColor() != null && !vr.getColor().trim().isEmpty() ? vr.getColor() : "Freesize")
+                            .size(vr.getSize() != null && !vr.getSize().trim().isEmpty() ? vr.getSize() : "Freesize")
+                            .sku(sku)
+                            .price(vr.getPrice() != null ? vr.getPrice() : product.getBasePrice())
+                            .stockQuantity(vr.getStockQuantity() != null ? vr.getStockQuantity() : 0)
+                            .imageUrl(vr.getImageUrl())
+                            .build();
+                } else {
+                    variant.setColor(vr.getColor() != null && !vr.getColor().trim().isEmpty() ? vr.getColor() : "Freesize");
+                    variant.setSize(vr.getSize() != null && !vr.getSize().trim().isEmpty() ? vr.getSize() : "Freesize");
+                    if (vr.getSku() != null && !vr.getSku().trim().isEmpty()) {
+                        variant.setSku(vr.getSku());
+                    }
+                    variant.setPrice(vr.getPrice() != null ? vr.getPrice() : product.getBasePrice());
+                    variant.setStockQuantity(vr.getStockQuantity() != null ? vr.getStockQuantity() : 0);
+                    variant.setImageUrl(vr.getImageUrl());
+                }
+                toKeep.add(variant);
+            }
+
+            // Remove orphans
+            currentVariants.removeIf(v -> !toKeep.contains(v));
+
+            // Add new ones or keep existing
+            for (com.hienstore.entity.ProductVariant v : toKeep) {
+                if (!currentVariants.contains(v)) {
+                    currentVariants.add(v);
+                }
+            }
+        } else if (request.getStockQuantity() != null) {
             if (product.getVariants() != null && !product.getVariants().isEmpty()) {
                 com.hienstore.entity.ProductVariant variant = product.getVariants().get(0);
                 variant.setStockQuantity(request.getStockQuantity());

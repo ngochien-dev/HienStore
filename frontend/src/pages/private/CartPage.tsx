@@ -28,7 +28,9 @@ export const CartPage = () => {
   }
 
   const handleRemoveItem = (itemId: number) => {
-    dispatch(removeItem(itemId))
+    if (window.confirm("Bạn có chắc chắn muốn xóa sản phẩm này khỏi giỏ hàng?")) {
+      dispatch(removeItem(itemId))
+    }
   }
 
   const formatPrice = (price: number) => {
@@ -89,7 +91,7 @@ export const CartPage = () => {
                       <div className="flex justify-between">
                         <div>
                           <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-1">
-                            {item.productVariant?.sku} {/* Should be product name but using SKU for now */}
+                            {item.productVariant?.productName || item.productVariant?.sku}
                           </h3>
                           <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">
                             <span>Màu: {item.productVariant?.color}</span>

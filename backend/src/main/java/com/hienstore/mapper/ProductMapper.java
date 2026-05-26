@@ -22,7 +22,29 @@ public interface ProductMapper {
 
     List<ProductDto> toDtoList(List<Product> products);
 
+    @Mapping(source = "product.name", target = "productName")
+    @Mapping(source = "product.slug", target = "productSlug")
+    @Mapping(target = "imageUrl", expression = "java(getVariantImageUrl(variant))")
     ProductVariantDto variantToDto(ProductVariant variant);
+
+    default String getVariantImageUrl(ProductVariant variant) {
+        if (variant == null) return null;
+        if (variant.getImageUrl() != null && !variant.getImageUrl().trim().isEmpty()) {
+            return variant.getImageUrl();
+        }
+        if (variant.getProduct() != null && variant.getProduct().getImages() != null) {
+            return variant.getProduct().getImages().stream()
+                    .filter(img -> img.getIsPrimary() != null && img.getIsPrimary())
+                    .map(img -> img.getImageUrl())
+                    .findFirst()
+                    .orElse(variant.getProduct().getImages().stream()
+                            .map(img -> img.getImageUrl())
+                            .findFirst()
+                            .orElse(null));
+        }
+        return null;
+    }
+
     ProductVariant dtoToVariant(ProductVariantDto variantDto);
 
     ProductImageDto imageToDto(ProductImage image);

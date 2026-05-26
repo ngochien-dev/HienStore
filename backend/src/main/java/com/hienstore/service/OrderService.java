@@ -115,6 +115,17 @@ public class OrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new RuntimeException("Order not found"));
         
+        // Hoàn kho nếu cập nhật sang CANCELLED từ một trạng thái khác CANCELLED
+        if (status != null && status == OrderStatus.CANCELLED && order.getStatus() != OrderStatus.CANCELLED) {
+            for (OrderItem orderItem : order.getItems()) {
+                ProductVariant variant = orderItem.getProductVariant();
+                if (variant != null) {
+                    variant.setStockQuantity(variant.getStockQuantity() + orderItem.getQuantity());
+                    productVariantRepository.save(variant);
+                }
+            }
+        }
+        
         if (status != null) {
             order.setStatus(status);
         }

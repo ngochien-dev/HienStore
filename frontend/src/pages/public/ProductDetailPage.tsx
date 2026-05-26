@@ -68,6 +68,7 @@ export const ProductDetailPage = () => {
         quantity 
       })).unwrap()
       showToast("Đã thêm vào giỏ hàng thành công!")
+      setQuantity(1)
     } catch (error) {
       showToast("Lỗi khi thêm vào giỏ hàng", 'error')
     } finally {

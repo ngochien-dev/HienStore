@@ -1,4 +1,4 @@
-package com.hienstore.dto.response;
+package com.hienstore.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,14 +10,12 @@ import java.math.BigDecimal;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ProductVariantDto {
-    private Long id;
+public class ProductVariantRequest {
+    private Long id; // null for new variants
     private String color;
     private String size;
     private String sku;
     private BigDecimal price;
     private Integer stockQuantity;
     private String imageUrl;
-    private String productName;
-    private String productSlug;
 }

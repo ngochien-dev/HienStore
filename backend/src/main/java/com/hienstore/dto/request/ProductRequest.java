@@ -37,4 +37,6 @@ public class ProductRequest {
     private List<String> images; // List of image URLs
 
     private Integer stockQuantity; // Default variant stock quantity
+
+    private List<ProductVariantRequest> variants;
 }
