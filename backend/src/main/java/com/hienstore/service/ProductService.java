@@ -26,6 +26,16 @@ public class ProductService {
                 .map(productMapper::toDto);
     }
 
+    @Transactional(readOnly = true)
+    public Page<ProductDto> getAllProducts(Pageable pageable) {
+        return productRepository.findAll(pageable).map(productMapper::toDto);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<ProductDto> searchAllProducts(String keyword, Pageable pageable) {
+        return productRepository.searchAllProducts(keyword, pageable).map(productMapper::toDto);
+    }
+
     @Cacheable(value = "products", key = "#slug")
     @Transactional(readOnly = true)
     public ProductDto getProductBySlug(String slug) {

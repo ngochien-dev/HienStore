@@ -24,11 +24,11 @@ export const AdminProductsPage = () => {
   const fetchProducts = async () => {
     setIsLoading(true)
     try {
-      let endpoint = '/api/products'
+      let endpoint = '/api/admin/products'
       const params: any = { page, size: 10 }
       
       if (searchTerm) {
-        endpoint = '/api/products/search'
+        endpoint = '/api/admin/products/search'
         params.keyword = searchTerm
       }
       
