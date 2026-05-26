@@ -1,7 +1,8 @@
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route, Outlet } from 'react-router-dom'
 import { UserLayout } from './components/layout/UserLayout'
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
+import { ProductsPage } from './pages/public/ProductsPage'
 
 // Temp Home Component
 const Home = () => (
@@ -21,10 +22,11 @@ function App() {
       {/* Public Routes with UserLayout */}
       <Route element={<UserLayout><Outlet /></UserLayout>}>
         <Route path="/" element={<Home />} />
-        {/* We will add more routes here like /products, /cart */}
+        <Route path="/products" element={<ProductsPage />} />
+        {/* We will add more routes here like /product/:slug, /cart */}
       </Route>
 
-      {/* Auth Routes (No header/footer, or minimal) */}
+      {/* Auth Routes */}
       <Route element={<UserLayout><Outlet /></UserLayout>}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -34,8 +36,5 @@ function App() {
     </Routes>
   )
 }
-
-// Temporary Outlet workaround since we nested inside UserLayout directly
-import { Outlet } from 'react-router-dom'
 
 export default App
