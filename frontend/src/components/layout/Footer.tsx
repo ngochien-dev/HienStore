@@ -1,7 +1,33 @@
 import { Link } from 'react-router-dom'
 import { Mail, Phone, MapPin, ShieldCheck } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import api from '../../api/axiosClient'
 
 export const Footer = () => {
+  const [settings, setSettings] = useState({
+    storeName: 'HienStore',
+    storeEmail: 'support@hienstore.com',
+    storePhone: '0123 456 789',
+    storeAddress: '12 Nguyễn Văn Bảo, Phường 4, Gò Vấp, TP.HCM',
+    facebookUrl: '#',
+    instagramUrl: '#'
+  })
+
+  useEffect(() => {
+    api.get('/api/settings').then(res => {
+      if (res.data && Object.keys(res.data).length > 0) {
+        setSettings({
+          storeName: res.data.storeName || 'HienStore',
+          storeEmail: res.data.storeEmail || 'support@hienstore.com',
+          storePhone: res.data.storePhone || '0123 456 789',
+          storeAddress: res.data.storeAddress || '12 Nguyễn Văn Bảo, Phường 4, Gò Vấp, TP.HCM',
+          facebookUrl: res.data.facebookUrl || '#',
+          instagramUrl: res.data.instagramUrl || '#'
+        })
+      }
+    }).catch(console.error)
+  }, [])
+
   return (
     <footer className="bg-slate-950 text-slate-300 border-t border-slate-900 pt-20 pb-10 font-sans">
       <div className="container mx-auto px-4 sm:px-6">
@@ -10,16 +36,16 @@ export const Footer = () => {
           {/* Brand & Intro */}
           <div className="space-y-5">
             <h3 className="text-2xl font-bold bg-gradient-to-r from-indigo-500 via-purple-400 to-indigo-400 bg-clip-text text-transparent tracking-tight font-heading">
-              HienStore
+              {settings.storeName}
             </h3>
             <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
               Thời trang nam nữ cao cấp, chính hãng. Tự tin thể hiện phong cách cá nhân với các thiết kế tinh tế và độc quyền từ HienStore.
             </p>
             <div className="flex space-x-3 pt-2">
-              <a href="#" className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-900 hover:bg-indigo-600 hover:text-white text-slate-400 transition-all duration-300 shadow-sm" aria-label="Facebook">
+              <a href={settings.facebookUrl} target="_blank" rel="noopener noreferrer" className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-900 hover:bg-indigo-600 hover:text-white text-slate-400 transition-all duration-300 shadow-sm" aria-label="Facebook">
                 <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="18" width="18" xmlns="http://www.w3.org/2000/svg"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path></svg>
               </a>
-              <a href="#" className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-900 hover:bg-pink-600 hover:text-white text-slate-400 transition-all duration-300 shadow-sm" aria-label="Instagram">
+              <a href={settings.instagramUrl} target="_blank" rel="noopener noreferrer" className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-900 hover:bg-pink-600 hover:text-white text-slate-400 transition-all duration-300 shadow-sm" aria-label="Instagram">
                 <svg stroke="currentColor" fill="none" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round" height="18" width="18" xmlns="http://www.w3.org/2000/svg"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line></svg>
               </a>
               <a href="#" className="w-9 h-9 flex items-center justify-center rounded-xl bg-slate-900 hover:bg-sky-500 hover:text-white text-slate-400 transition-all duration-300 shadow-sm" aria-label="Twitter">
@@ -88,15 +114,15 @@ export const Footer = () => {
             <ul className="space-y-4 text-sm text-slate-400">
               <li className="flex items-start gap-3">
                 <MapPin size={18} className="text-indigo-500 shrink-0 mt-0.5" />
-                <span>12 Nguyễn Văn Bảo, Phường 4, Gò Vấp, TP.HCM</span>
+                <span>{settings.storeAddress}</span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone size={18} className="text-indigo-500 shrink-0" />
-                <span>0123 456 789</span>
+                <span>{settings.storePhone}</span>
               </li>
               <li className="flex items-center gap-3">
                 <Mail size={18} className="text-indigo-500 shrink-0" />
-                <span>support@hienstore.com</span>
+                <span>{settings.storeEmail}</span>
               </li>
             </ul>
           </div>
@@ -106,7 +132,7 @@ export const Footer = () => {
         {/* Footer Bottom */}
         <div className="border-t border-slate-900 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs text-slate-500 text-center md:text-left">
-            &copy; {new Date().getFullYear()} HienStore. Crafted with precision and style. All rights reserved.
+            &copy; {new Date().getFullYear()} {settings.storeName}. Crafted with precision and style. All rights reserved.
           </p>
           <div className="flex items-center gap-2 text-xs text-slate-500 bg-slate-900/50 border border-slate-900 px-3.5 py-1.5 rounded-xl">
             <ShieldCheck size={14} className="text-emerald-500" />

@@ -172,7 +172,6 @@ export const AdminCategoriesPage = () => {
                   <th className="px-6 py-4">ID</th>
                   <th className="px-6 py-4">Hình ảnh</th>
                   <th className="px-6 py-4">Tên danh mục</th>
-                  <th className="px-6 py-4">Đường dẫn (Slug)</th>
                   <th className="px-6 py-4">Trạng thái</th>
                   <th className="px-6 py-4 text-right">Thao tác</th>
                 </tr>
@@ -191,7 +190,6 @@ export const AdminCategoriesPage = () => {
                       )}
                     </td>
                     <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">{category.name}</td>
-                    <td className="px-6 py-4 text-gray-500">{category.slug}</td>
                     <td className="px-6 py-4">
                       <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${category.isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
                         {category.isActive ? 'Hoạt động' : 'Đã ẩn'}
@@ -260,17 +258,8 @@ export const AdminCategoriesPage = () => {
                   />
                 </div>
                 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Đường dẫn (Slug) *</label>
-                  <input 
-                    type="text" 
-                    name="slug"
-                    value={formData.slug}
-                    onChange={handleChange}
-                    required
-                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  />
-                </div>
+                {/* Hidden slug field */}
+                <input type="hidden" name="slug" value={formData.slug} />
                 
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">URL Hình ảnh</label>
