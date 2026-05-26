@@ -32,7 +32,7 @@ public class DataSeeder implements CommandLineRunner {
                     .username("admin")
                     .password(passwordEncoder.encode("admin123"))
                     .role(Role.ADMIN)
-                    .isActive(true)
+                    .isEnabled(true)
                     .build();
 
             User adminUser = User.builder()
@@ -40,7 +40,7 @@ public class DataSeeder implements CommandLineRunner {
                     .lastName("System")
                     .email("admin@hienstore.com")
                     .phone("0999999999")
-                    .userType(UserType.DIAMOND)
+                    .userType(UserType.GOLD)
                     .account(adminAccount)
                     .isEmailVerified(true)
                     .isPhoneVerified(true)
