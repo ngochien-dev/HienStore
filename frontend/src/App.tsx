@@ -14,25 +14,18 @@ import { AdminLayout } from './components/layout/AdminLayout'
 import { ProtectedAdminRoute } from './components/routing/ProtectedAdminRoute'
 import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
 import { AdminOrdersPage } from './pages/admin/AdminOrdersPage'
+import { AdminProductsPage } from './pages/admin/AdminProductsPage'
+import { AdminCustomersPage } from './pages/admin/AdminCustomersPage'
+import { AdminSettingsPage } from './pages/admin/AdminSettingsPage'
 
-// Temp Home Component
-const Home = () => (
-  <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-    <h1 className="text-5xl font-bold bg-gradient-to-r from-indigo-500 to-cyan-500 bg-clip-text text-transparent mb-6">
-      Chào mừng đến với HienStore
-    </h1>
-    <p className="text-xl text-[var(--color-text-secondary)] max-w-2xl">
-      Nền tảng mua sắm thời trang hiện đại. Chúng tôi đang xây dựng những tính năng tuyệt vời nhất cho bạn.
-    </p>
-  </div>
-)
+import { HomePage } from './pages/public/HomePage'
 
 function App() {
   return (
     <Routes>
       {/* Public & Customer Routes with UserLayout */}
       <Route element={<UserLayout><Outlet /></UserLayout>}>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/products" element={<ProductsPage />} />
         <Route path="/product/:slug" element={<ProductDetailPage />} />
         <Route path="/cart" element={<CartPage />} />
@@ -46,7 +39,9 @@ function App() {
         <Route element={<AdminLayout><Outlet /></AdminLayout>}>
           <Route index element={<AdminDashboardPage />} />
           <Route path="orders" element={<AdminOrdersPage />} />
-          {/* Add more admin routes here later */}
+          <Route path="products" element={<AdminProductsPage />} />
+          <Route path="customers" element={<AdminCustomersPage />} />
+          <Route path="settings" element={<AdminSettingsPage />} />
         </Route>
       </Route>
 

@@ -53,12 +53,12 @@ export const Header = () => {
   ]
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-[var(--color-bg)]/80 backdrop-blur-md">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+    <header className="sticky top-0 z-50 w-full transition-all duration-300 glass border-b border-gray-200/50 dark:border-gray-700/50">
+      <div className="container mx-auto px-4 h-16 sm:h-20 flex items-center justify-between">
         
-        {/* Mobile Menu Button */}
+        {/* Mobile menu button */}
         <button 
-          className="md:hidden p-2 text-[var(--color-text-secondary)]"
+          className="md:hidden p-2 -ml-2 text-gray-500 hover:text-indigo-600 transition-colors"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
         >
           {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
@@ -107,6 +107,12 @@ export const Header = () => {
             {isAuthenticated ? (
               <div className="flex items-center space-x-4">
                 <span className="text-sm font-medium">Hi, {user?.fullName || 'User'}</span>
+                
+                {user?.role === 'ADMIN' && (
+                  <Link to="/admin" className="p-2 text-indigo-600 hover:text-indigo-800 transition-colors bg-indigo-50 dark:bg-indigo-900/20 rounded-lg flex items-center gap-2" title="Admin Portal">
+                    <span className="text-sm font-semibold hidden sm:inline">Trang Quản Trị</span>
+                  </Link>
+                )}
                 <Link to="/orders" className="p-2 text-[var(--color-text-secondary)] hover:text-indigo-600 transition-colors" title="Đơn hàng của tôi">
                   <Package size={20} />
                 </Link>
