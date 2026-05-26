@@ -26,14 +26,14 @@ public class CartService {
     private final CartMapper cartMapper;
 
     @Transactional
-    public CartDto getCart(Long userId) {
-        Cart cart = getOrCreateCart(userId);
+    public CartDto getCart(String username) {
+        Cart cart = getOrCreateCart(username);
         return cartMapper.toDto(cart);
     }
 
     @Transactional
-    public CartDto addToCart(Long userId, AddToCartRequest request) {
-        Cart cart = getOrCreateCart(userId);
+    public CartDto addToCart(String username, AddToCartRequest request) {
+        Cart cart = getOrCreateCart(username);
         ProductVariant variant = variantRepository.findById(request.getVariantId())
                 .orElseThrow(() -> new RuntimeException("Product variant not found"));
 
@@ -66,8 +66,8 @@ public class CartService {
     }
 
     @Transactional
-    public CartDto updateItemQuantity(Long userId, Long itemId, Integer quantity) {
-        Cart cart = getOrCreateCart(userId);
+    public CartDto updateItemQuantity(String username, Long itemId, Integer quantity) {
+        Cart cart = getOrCreateCart(username);
         
         CartItem item = cart.getItems().stream()
                 .filter(i -> i.getId().equals(itemId))
@@ -88,8 +88,8 @@ public class CartService {
     }
 
     @Transactional
-    public CartDto removeItem(Long userId, Long itemId) {
-        Cart cart = getOrCreateCart(userId);
+    public CartDto removeItem(String username, Long itemId) {
+        Cart cart = getOrCreateCart(username);
         
         CartItem item = cart.getItems().stream()
                 .filter(i -> i.getId().equals(itemId))
@@ -102,16 +102,16 @@ public class CartService {
     }
 
     @Transactional
-    public void clearCart(Long userId) {
-        Cart cart = getOrCreateCart(userId);
+    public void clearCart(String username) {
+        Cart cart = getOrCreateCart(username);
         cart.getItems().clear();
         cartRepository.save(cart);
     }
 
-    private Cart getOrCreateCart(Long userId) {
-        return cartRepository.findByUserId(userId).orElseGet(() -> {
-            User user = userRepository.findById(userId)
-                    .orElseThrow(() -> new RuntimeException("User not found"));
+    private Cart getOrCreateCart(String username) {
+        User user = userRepository.findByAccountUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return cartRepository.findByUserId(user.getId()).orElseGet(() -> {
             Cart newCart = Cart.builder()
                     .user(user)
                     .build();

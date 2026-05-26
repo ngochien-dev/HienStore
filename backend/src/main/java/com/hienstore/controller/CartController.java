@@ -25,7 +25,7 @@ public class CartController {
     @Operation(summary = "Get user's shopping cart")
     @GetMapping
     public ResponseEntity<CartDto> getCart(@AuthenticationPrincipal CustomUserDetails userDetails) {
-        return ResponseEntity.ok(cartService.getCart(userDetails.getId()));
+        return ResponseEntity.ok(cartService.getCart(userDetails.getUsername()));
     }
 
     @Operation(summary = "Add item to cart")
@@ -33,7 +33,7 @@ public class CartController {
     public ResponseEntity<CartDto> addToCart(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @Valid @RequestBody AddToCartRequest request) {
-        return ResponseEntity.ok(cartService.addToCart(userDetails.getId(), request));
+        return ResponseEntity.ok(cartService.addToCart(userDetails.getUsername(), request));
     }
 
     @Operation(summary = "Update item quantity")
@@ -42,7 +42,7 @@ public class CartController {
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long itemId,
             @RequestParam Integer quantity) {
-        return ResponseEntity.ok(cartService.updateItemQuantity(userDetails.getId(), itemId, quantity));
+        return ResponseEntity.ok(cartService.updateItemQuantity(userDetails.getUsername(), itemId, quantity));
     }
 
     @Operation(summary = "Remove item from cart")
@@ -50,6 +50,6 @@ public class CartController {
     public ResponseEntity<CartDto> removeItem(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @PathVariable Long itemId) {
-        return ResponseEntity.ok(cartService.removeItem(userDetails.getId(), itemId));
+        return ResponseEntity.ok(cartService.removeItem(userDetails.getUsername(), itemId));
     }
 }
