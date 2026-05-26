@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { X, FolderPlus, Loader2 } from 'lucide-react'
+import { useState, useEffect, useRef } from 'react'
+import { X, FolderPlus, Loader2, UploadCloud } from 'lucide-react'
 import { Button } from '../../ui/Button'
 import { Input } from '../../ui/Input'
 import api from '../../../api/axiosClient'
@@ -14,6 +14,8 @@ interface ProductFormModalProps {
 export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: ProductFormModalProps) => {
   const [categories, setCategories] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isUploading, setIsUploading] = useState(false)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -129,6 +131,54 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
     } finally {
       setIsSavingCat(false)
     }
+  }
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || files.length === 0) return
+
+    setIsUploading(true)
+    try {
+      const uploadedUrls: string[] = []
+      for (let i = 0; i < files.length; i++) {
+        const formDataObj = new FormData()
+        formDataObj.append('file', files[i])
+        
+        const res = await api.post('/api/admin/upload', formDataObj, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+        if (res.data && res.data.url) {
+          uploadedUrls.push(res.data.url)
+        }
+      }
+
+      // Append new URLs to existing ones
+      const existingUrls = formData.images 
+        ? formData.images.split(',').map(url => url.trim()).filter(Boolean) 
+        : []
+      const combined = [...existingUrls, ...uploadedUrls].join(', ')
+      setFormData(prev => ({ ...prev, images: combined }))
+    } catch (error) {
+      console.error('Failed to upload files:', error)
+      alert('Có lỗi xảy ra khi tải ảnh lên từ máy tính')
+    } finally {
+      setIsUploading(false)
+      if (fileInputRef.current) fileInputRef.current.value = '' // Reset input
+    }
+  }
+
+  const handleRemoveImage = (indexToRemove: number) => {
+    const urls = formData.images 
+      ? formData.images.split(',').map(url => url.trim()).filter(Boolean) 
+      : []
+    const updated = urls.filter((_, idx) => idx !== indexToRemove).join(', ')
+    setFormData(prev => ({ ...prev, images: updated }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -308,16 +358,62 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
               </div>
             </div>
 
-            {/* Images Input */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Hình ảnh sản phẩm (URL)</label>
+            {/* Images Input & Local Upload */}
+            <div className="space-y-3">
+              <div className="flex justify-between items-center">
+                <label className="text-sm font-medium">Hình ảnh sản phẩm (URL hoặc tải từ máy)</label>
+                <button
+                  type="button"
+                  onClick={handleUploadClick}
+                  disabled={isUploading}
+                  className="px-3 py-1.5 text-xs font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/40 border border-indigo-100 dark:border-indigo-900/60 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/60 flex items-center gap-1.5 disabled:opacity-50 transition-all duration-300"
+                >
+                  {isUploading ? (
+                    <Loader2 className="animate-spin" size={14} />
+                  ) : (
+                    <UploadCloud size={14} />
+                  )}
+                  <span>Tải ảnh lên...</span>
+                </button>
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleFileUpload}
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                />
+              </div>
+
               <Input
                 name="images"
                 value={formData.images}
                 onChange={handleChange}
-                placeholder="Vd: https://photo-url-1.jpg, https://photo-url-2.jpg"
+                placeholder="Nhập link ảnh cách nhau bằng dấu phẩy hoặc tải ảnh ở nút bên trên"
               />
-              <p className="text-[10px] text-gray-400">Có thể nhập nhiều URL hình ảnh ngăn cách nhau bởi dấu phẩy (,)</p>
+
+              {/* Images Preview Section */}
+              {formData.images && (
+                <div className="flex flex-wrap gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-100 dark:border-slate-800/80">
+                  {formData.images.split(',').map((url, idx) => {
+                    const cleanUrl = url.trim()
+                    if (!cleanUrl) return null
+                    return (
+                      <div key={idx} className="relative w-16 h-20 rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 group shadow-sm bg-white dark:bg-gray-800 flex items-center justify-center">
+                        <img src={cleanUrl} alt="preview" className="w-full h-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(idx)}
+                          className="absolute -top-1.5 -right-1.5 p-1 bg-rose-500 hover:bg-rose-600 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-sm"
+                          title="Xóa ảnh"
+                        >
+                          <X size={10} />
+                        </button>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Description */}
