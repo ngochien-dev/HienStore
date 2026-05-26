@@ -305,8 +305,11 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
         await api.post('/api/admin/products', payload)
       }
       onSuccess()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to save product:', error)
+      if (error && error.response) {
+        console.error('Error Response Data:', error.response.data)
+      }
       alert('Có lỗi xảy ra khi lưu sản phẩm')
     } finally {
       setIsLoading(false)
