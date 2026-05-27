@@ -91,6 +91,18 @@ public class OrderService {
         order.setTotalAmount(totalAmount);
         order.setItems(orderItems);
         
+        // Calculate Membership Discount
+        BigDecimal membershipDiscountPercentage = BigDecimal.ZERO;
+        switch (user.getUserType()) {
+            case SILVER: membershipDiscountPercentage = BigDecimal.valueOf(3); break;
+            case GOLD: membershipDiscountPercentage = BigDecimal.valueOf(5); break;
+            case DIAMOND: membershipDiscountPercentage = BigDecimal.valueOf(10); break;
+            default: break;
+        }
+        BigDecimal membershipDiscount = totalAmount.multiply(membershipDiscountPercentage).divide(BigDecimal.valueOf(100));
+        order.setMembershipDiscount(membershipDiscount);
+        totalAmount = totalAmount.subtract(membershipDiscount);
+        
         // Handle Coupon
         BigDecimal discountAmount = BigDecimal.ZERO;
         if (request.getCouponCode() != null && !request.getCouponCode().trim().isEmpty()) {
@@ -216,6 +228,25 @@ public class OrderService {
                     productVariantRepository.save(variant);
                 }
             }
+        }
+        
+        // Tích điểm và nâng hạng nếu giao thành công
+        if (status != null && status == OrderStatus.DELIVERED && order.getStatus() != OrderStatus.DELIVERED) {
+            int earnedPoints = order.getTotalAmount().divide(BigDecimal.valueOf(1000)).intValue();
+            User orderUser = order.getUser();
+            orderUser.setPoint(orderUser.getPoint() + earnedPoints);
+            
+            int currentPoints = orderUser.getPoint();
+            if (currentPoints >= 10000) {
+                orderUser.setUserType(com.hienstore.enums.UserType.DIAMOND);
+            } else if (currentPoints >= 5000) {
+                orderUser.setUserType(com.hienstore.enums.UserType.GOLD);
+            } else if (currentPoints >= 1000) {
+                orderUser.setUserType(com.hienstore.enums.UserType.SILVER);
+            } else {
+                orderUser.setUserType(com.hienstore.enums.UserType.COPPER);
+            }
+            userRepository.save(orderUser);
         }
         
         boolean statusChanged = status != null && status != order.getStatus();

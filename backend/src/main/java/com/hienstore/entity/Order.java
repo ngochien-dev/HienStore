@@ -32,6 +32,9 @@ public class Order {
     @Column(precision = 12, scale = 2)
     private BigDecimal discountAmount;
 
+    @Column(precision = 12, scale = 2)
+    private BigDecimal membershipDiscount;
+
     @Column(length = 50)
     private String couponCode;
 

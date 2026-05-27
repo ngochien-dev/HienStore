@@ -7,6 +7,8 @@ interface User {
   fullName: string
   role: string
   phone?: string
+  point: number
+  userType: string
 }
 
 interface AuthState {

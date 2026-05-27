@@ -10,6 +10,7 @@ import org.mapstruct.Mapping;
 @Mapper(componentModel = "spring", uses = {ProductMapper.class})
 public interface OrderMapper {
     @Mapping(target = "discountAmount", source = "discountAmount")
+    @Mapping(target = "membershipDiscount", source = "membershipDiscount")
     @Mapping(target = "couponCode", source = "couponCode")
     OrderDto toDto(Order order);
     OrderItemDto toDto(OrderItem orderItem);

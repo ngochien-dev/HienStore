@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useAppSelector, useAppDispatch } from '../../app/hooks'
 import { createOrder } from '../../features/order/orderSlice'
 import { fetchCart } from '../../features/cart/cartSlice'
-import { Loader2, ArrowLeft, CreditCard, Truck, Ticket, Check, X } from 'lucide-react'
+import { Loader2, ArrowLeft, CreditCard, Truck, Ticket, Check, X, Award } from 'lucide-react'
 import api from '../../api/axiosClient'
 
 export const CheckoutPage = () => {
@@ -137,22 +137,37 @@ export const CheckoutPage = () => {
     setFormData(prev => ({ ...prev, couponCode: '' }))
   }
 
+  // Membership discount
+  const getMembershipDiscountAmount = () => {
+    if (!user) return 0;
+    let percentage = 0;
+    switch ((user as any).userType) {
+      case 'SILVER': percentage = 3; break;
+      case 'GOLD': percentage = 5; break;
+      case 'DIAMOND': percentage = 10; break;
+    }
+    return (totalAmount * percentage) / 100;
+  }
+
+  const membershipDiscountAmount = getMembershipDiscountAmount()
+  const amountAfterMembershipDiscount = totalAmount - membershipDiscountAmount
+
   const getDiscountAmount = () => {
     if (!appliedCoupon) return 0
     let discount = 0
     if (appliedCoupon.discountType === 'PERCENTAGE') {
-      discount = totalAmount * (appliedCoupon.discountValue / 100)
+      discount = (amountAfterMembershipDiscount * appliedCoupon.discountValue) / 100
       if (appliedCoupon.maxDiscountAmount && discount > appliedCoupon.maxDiscountAmount) {
         discount = appliedCoupon.maxDiscountAmount
       }
     } else {
       discount = appliedCoupon.discountValue
     }
-    return Math.min(discount, totalAmount) // Cannot discount more than total
+    return Math.min(discount, amountAfterMembershipDiscount) // Cannot discount more than total
   }
 
   const discountAmount = getDiscountAmount()
-  const finalTotalAmount = Math.max(0, totalAmount - discountAmount)
+  const finalTotalAmount = Math.max(0, amountAfterMembershipDiscount - discountAmount)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -380,6 +395,18 @@ export const CheckoutPage = () => {
                 <span>Phí giao hàng:</span>
                 <span>Miễn phí</span>
               </div>
+              {membershipDiscountAmount > 0 && (
+                <div className="flex justify-between text-amber-600 dark:text-amber-400">
+                  <span className="flex items-center gap-1">
+                    <Award size={16} /> Hạng {
+                      user?.userType === 'SILVER' ? 'Bạc (3%)' :
+                      user?.userType === 'GOLD' ? 'Vàng (5%)' :
+                      user?.userType === 'DIAMOND' ? 'Kim Cương (10%)' : ''
+                    }:
+                  </span>
+                  <span>-{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(membershipDiscountAmount)}</span>
+                </div>
+              )}
               {appliedCoupon && (
                 <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
                   <span>Giảm giá ({appliedCoupon.code}):</span>

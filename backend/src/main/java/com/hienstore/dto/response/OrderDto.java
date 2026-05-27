@@ -14,6 +14,7 @@ public class OrderDto {
     private Long id;
     private BigDecimal totalAmount;
     private BigDecimal discountAmount;
+    private BigDecimal membershipDiscount;
     private String couponCode;
     private OrderStatus status;
     private PaymentMethod paymentMethod;

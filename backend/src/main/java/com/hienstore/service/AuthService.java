@@ -61,6 +61,8 @@ public class AuthService {
                 .email(user.getEmail())
                 .role(account.getRole().name())
                 .fullName(user.getFirstName() + " " + (user.getLastName() != null ? user.getLastName() : ""))
+                .point(user.getPoint())
+                .userType(user.getUserType().name())
                 .build();
     }
 
@@ -84,6 +86,8 @@ public class AuthService {
                 .email(user.getEmail())
                 .role(user.getAccount().getRole().name())
                 .fullName(user.getFirstName() + " " + (user.getLastName() != null ? user.getLastName() : ""))
+                .point(user.getPoint())
+                .userType(user.getUserType().name())
                 .build();
     }
 
