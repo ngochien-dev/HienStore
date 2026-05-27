@@ -23,6 +23,8 @@ public class ReviewMapper {
                 .createdAt(review.getCreatedAt())
                 .adminReply(review.getAdminReply())
                 .repliedAt(review.getRepliedAt())
+                .imageUrl(review.getImageUrl())
+                .isHidden(review.getIsHidden())
                 .build();
     }
 }

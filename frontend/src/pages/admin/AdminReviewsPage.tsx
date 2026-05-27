@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { MessageSquare, Star, Reply, Trash2, Loader2, AlertCircle } from 'lucide-react'
+import { MessageSquare, Star, Reply, Trash2, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react'
 import api from '../../api/axiosClient'
 import { toast } from 'react-toastify'
 
@@ -14,6 +14,8 @@ interface Review {
   createdAt: string
   adminReply: string | null
   repliedAt: string | null
+  imageUrl: string | null
+  isHidden: boolean
 }
 
 export const AdminReviewsPage = () => {
@@ -48,6 +50,16 @@ export const AdminReviewsPage = () => {
       setReviews(reviews.filter(r => r.id !== id))
     } catch (error) {
       toast.error('Không thể xóa đánh giá')
+    }
+  }
+
+  const handleToggleHide = async (id: number) => {
+    try {
+      const res = await api.put(`/api/admin/reviews/${id}/toggle-hide`)
+      setReviews(reviews.map(r => r.id === id ? res.data : r))
+      toast.success('Đã cập nhật trạng thái hiển thị')
+    } catch (error) {
+      toast.error('Không thể cập nhật trạng thái')
     }
   }
 
@@ -116,7 +128,14 @@ export const AdminReviewsPage = () => {
                       )}
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900 dark:text-white">{review.userName}</h4>
+                      <div className="flex items-center gap-2">
+                        <h4 className="font-semibold text-gray-900 dark:text-white">{review.userName}</h4>
+                        {review.isHidden && (
+                          <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 text-[10px] font-bold uppercase tracking-wider">
+                            Đã ẩn
+                          </span>
+                        )}
+                      </div>
                       <div className="flex items-center gap-2 text-sm text-gray-500">
                         <div className="flex gap-0.5">{renderStars(review.rating)}</div>
                         <span>•</span>
@@ -124,16 +143,33 @@ export const AdminReviewsPage = () => {
                       </div>
                     </div>
                   </div>
-                  <button 
-                    onClick={() => handleDelete(review.id)}
-                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
-                    title="Xóa đánh giá"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <button 
+                      onClick={() => handleToggleHide(review.id)}
+                      className={`p-2 rounded-lg transition-colors ${review.isHidden ? 'text-green-500 hover:bg-green-50 dark:hover:bg-green-900/20' : 'text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20'}`}
+                      title={review.isHidden ? "Hiển thị đánh giá" : "Ẩn đánh giá"}
+                    >
+                      {review.isHidden ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(review.id)}
+                      className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                      title="Xóa đánh giá"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
                 
-                <p className="text-gray-700 dark:text-gray-300 mb-4 pl-14">{review.comment}</p>
+                <p className={`mb-4 pl-14 ${review.isHidden ? 'text-gray-400 dark:text-gray-500 line-through' : 'text-gray-700 dark:text-gray-300'}`}>
+                  {review.comment}
+                </p>
+
+                {review.imageUrl && (
+                  <div className="pl-14 mb-4">
+                    <img src={review.imageUrl} alt="Review attachment" className="h-24 w-auto rounded-lg border border-gray-200 dark:border-gray-700 object-cover" />
+                  </div>
+                )}
                 
                 <div className="pl-14">
                   {review.adminReply ? (

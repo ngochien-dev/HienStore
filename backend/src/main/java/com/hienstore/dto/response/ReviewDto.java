@@ -17,4 +17,6 @@ public class ReviewDto {
     private LocalDateTime createdAt;
     private String adminReply;
     private LocalDateTime repliedAt;
+    private String imageUrl;
+    private Boolean isHidden;
 }

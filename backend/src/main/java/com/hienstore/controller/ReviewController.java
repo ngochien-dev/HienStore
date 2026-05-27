@@ -34,4 +34,22 @@ public class ReviewController {
             Authentication authentication) {
         return ResponseEntity.ok(reviewService.createReview(authentication.getName(), request));
     }
+
+    @PutMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ReviewDto> updateReview(
+            @PathVariable Long id,
+            @Valid @RequestBody ReviewRequest request,
+            Authentication authentication) {
+        return ResponseEntity.ok(reviewService.updateReview(id, request, authentication.getName()));
+    }
+
+    @DeleteMapping("/{id}")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<Void> deleteReview(
+            @PathVariable Long id,
+            Authentication authentication) {
+        reviewService.deleteReview(id, authentication.getName(), false);
+        return ResponseEntity.ok().build();
+    }
 }

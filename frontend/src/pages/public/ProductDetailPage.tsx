@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
-import { ShoppingCart, Heart, Share2, Shield, Truck, RotateCcw, Check, ChevronRight, Loader2, ArrowLeft, Star, ShieldCheck, Plus, Minus, ShoppingBag, CheckCircle, MessageSquare } from 'lucide-react'
+import { ShoppingCart, Heart, Share2, Shield, Truck, RotateCcw, Check, ChevronRight, Loader2, ArrowLeft, Star, ShieldCheck, Plus, Minus, ShoppingBag, CheckCircle, MessageSquare, Image as ImageIcon, Trash2, Edit2, X } from 'lucide-react'
 import api from '../../api/axiosClient'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { addToCart } from '../../features/cart/cartSlice'
@@ -11,7 +11,7 @@ export const ProductDetailPage = () => {
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useAppDispatch()
-  const { isAuthenticated } = useAppSelector((state) => state.auth)
+  const { isAuthenticated, user: authUser } = useAppSelector((state) => state.auth)
   const { items: wishlistItems } = useAppSelector(state => state.wishlist)
   
   const [product, setProduct] = useState<any>(null)
@@ -28,7 +28,11 @@ export const ProductDetailPage = () => {
   const [reviewsTotalPages, setReviewsTotalPages] = useState(0)
   const [ratingInput, setRatingInput] = useState(5)
   const [commentInput, setCommentInput] = useState('')
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imageUrlPreview, setImageUrlPreview] = useState<string>('')
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [isSubmittingReview, setIsSubmittingReview] = useState(false)
+  const [editingReviewId, setEditingReviewId] = useState<number | null>(null)
 
   const isLiked = product ? wishlistItems.includes(product.id) : false;
 
@@ -89,6 +93,32 @@ export const ProductDetailPage = () => {
     }
   }
 
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0]
+      setImageFile(file)
+      setImageUrlPreview(URL.createObjectURL(file))
+    }
+  }
+
+  const uploadImageToBackend = async (file: File): Promise<string | null> => {
+    try {
+      setIsUploadingImage(true)
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await api.post('/api/files/upload', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      })
+      return res.data.url
+    } catch (error) {
+      console.error("Upload error", error)
+      showToast("Lỗi khi tải ảnh lên", "error")
+      return null
+    } finally {
+      setIsUploadingImage(false)
+    }
+  }
+
   const handleSubmitReview = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!isAuthenticated) {
@@ -98,20 +128,72 @@ export const ProductDetailPage = () => {
     
     setIsSubmittingReview(true)
     try {
-      await api.post('/api/reviews', {
-        productId: product.id,
-        rating: ratingInput,
-        comment: commentInput
-      })
-      showToast("Đánh giá của bạn đã được gửi thành công!")
-      setCommentInput('')
-      setRatingInput(5)
+      let finalImageUrl = null
+      if (imageFile) {
+        finalImageUrl = await uploadImageToBackend(imageFile)
+      }
+
+      if (editingReviewId) {
+        await api.put(`/api/reviews/${editingReviewId}`, {
+          productId: product.id,
+          rating: ratingInput,
+          comment: commentInput,
+          imageUrl: finalImageUrl || (imageUrlPreview.startsWith('http') ? imageUrlPreview : null)
+        })
+        showToast("Đã cập nhật đánh giá thành công!")
+      } else {
+        await api.post('/api/reviews', {
+          productId: product.id,
+          rating: ratingInput,
+          comment: commentInput,
+          imageUrl: finalImageUrl
+        })
+        showToast("Đánh giá của bạn đã được gửi thành công!")
+      }
+      
+      resetReviewForm()
       fetchReviews(product.id, 0)
       setReviewsPage(0)
     } catch (error: any) {
-      showToast(error.response?.data || "Có lỗi xảy ra khi gửi đánh giá", 'error')
+      const errData = error.response?.data;
+      const errMsg = typeof errData === 'string' ? errData : errData?.message || "Có lỗi xảy ra khi gửi đánh giá";
+      showToast(errMsg, 'error')
     } finally {
       setIsSubmittingReview(false)
+    }
+  }
+
+  const resetReviewForm = () => {
+    setCommentInput('')
+    setRatingInput(5)
+    setImageFile(null)
+    setImageUrlPreview('')
+    setEditingReviewId(null)
+  }
+
+  const handleEditReview = (review: any) => {
+    setEditingReviewId(review.id)
+    setRatingInput(review.rating)
+    setCommentInput(review.comment)
+    if (review.imageUrl) {
+      setImageUrlPreview(review.imageUrl)
+    } else {
+      setImageUrlPreview('')
+    }
+    setImageFile(null)
+    // Scroll to form
+    window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' })
+  }
+
+  const handleDeleteReview = async (reviewId: number) => {
+    if (!window.confirm("Bạn có chắc chắn muốn xóa đánh giá này?")) return
+    try {
+      await api.delete(`/api/reviews/${reviewId}`)
+      showToast("Đã xóa đánh giá thành công")
+      fetchReviews(product.id, 0)
+      setReviewsPage(0)
+    } catch (error: any) {
+      showToast("Lỗi khi xóa đánh giá", "error")
     }
   }
 
@@ -410,14 +492,48 @@ export const ProductDetailPage = () => {
                       className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 focus:ring-2 focus:ring-indigo-500 outline-none text-sm resize-none h-32"
                     />
                   </div>
-                  <button 
-                    type="submit"
-                    disabled={isSubmittingReview}
-                    className="w-full bg-slate-900 dark:bg-indigo-600 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-slate-800 dark:hover:bg-indigo-700 transition-colors disabled:opacity-50"
-                  >
-                    {isSubmittingReview ? <Loader2 className="animate-spin" size={18} /> : null}
-                    Gửi đánh giá
-                  </button>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Đính kèm hình ảnh</label>
+                    <div className="flex items-center gap-4">
+                      {imageUrlPreview ? (
+                        <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700">
+                          <img src={imageUrlPreview} alt="preview" className="w-full h-full object-cover" />
+                          <button 
+                            type="button" 
+                            onClick={() => { setImageFile(null); setImageUrlPreview(''); }}
+                            className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 hover:bg-black/70"
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      ) : (
+                        <label className="w-20 h-20 flex flex-col items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+                          <ImageIcon size={20} className="text-slate-400 mb-1" />
+                          <span className="text-[10px] text-slate-500 font-medium">Thêm ảnh</span>
+                          <input type="file" accept="image/*" className="hidden" onChange={handleImageUpload} />
+                        </label>
+                      )}
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    {editingReviewId && (
+                      <button 
+                        type="button"
+                        onClick={resetReviewForm}
+                        className="flex-1 bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold py-3 rounded-xl hover:bg-slate-300 dark:hover:bg-slate-700 transition-colors"
+                      >
+                        Hủy
+                      </button>
+                    )}
+                    <button 
+                      type="submit"
+                      disabled={isSubmittingReview || isUploadingImage}
+                      className="flex-[2] bg-slate-900 dark:bg-indigo-600 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-slate-800 dark:hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                    >
+                      {(isSubmittingReview || isUploadingImage) ? <Loader2 className="animate-spin" size={18} /> : null}
+                      {editingReviewId ? 'Cập nhật đánh giá' : 'Gửi đánh giá'}
+                    </button>
+                  </div>
                 </form>
               ) : (
                 <div className="text-center py-6">
@@ -449,7 +565,19 @@ export const ProductDetailPage = () => {
                     <div className="flex-1">
                       <div className="flex items-center justify-between mb-1">
                         <h4 className="font-bold text-slate-900 dark:text-white">{review.userName}</h4>
-                        <span className="text-xs text-slate-500">{new Date(review.createdAt).toLocaleDateString('vi-VN')}</span>
+                        <div className="flex items-center gap-3">
+                          <span className="text-xs text-slate-500">{new Date(review.createdAt).toLocaleDateString('vi-VN')}</span>
+                          {authUser && authUser.id === review.userId && (
+                            <div className="flex items-center gap-1">
+                              <button onClick={() => handleEditReview(review)} className="p-1 text-slate-400 hover:text-indigo-600 transition-colors" title="Sửa đánh giá">
+                                <Edit2 size={14} />
+                              </button>
+                              <button onClick={() => handleDeleteReview(review.id)} className="p-1 text-slate-400 hover:text-red-500 transition-colors" title="Xóa đánh giá">
+                                <Trash2 size={14} />
+                              </button>
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <div className="flex items-center gap-1 mb-3">
                         {[...Array(5)].map((_, i) => (
@@ -463,6 +591,11 @@ export const ProductDetailPage = () => {
                       <p className="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-line mb-3">
                         {review.comment}
                       </p>
+                      {review.imageUrl && (
+                        <div className="mb-3">
+                          <img src={review.imageUrl} alt="Review attachment" className="h-24 w-auto rounded-lg border border-slate-200 dark:border-slate-800 object-cover" />
+                        </div>
+                      )}
                       {review.adminReply && (
                         <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4 border-l-4 border-indigo-500 mt-3">
                           <div className="flex items-center gap-2 mb-1">

@@ -28,7 +28,7 @@ public class ReviewService {
 
     @Transactional(readOnly = true)
     public Page<ReviewDto> getProductReviews(Long productId, Pageable pageable) {
-        return reviewRepository.findByProductIdOrderByCreatedAtDesc(productId, pageable)
+        return reviewRepository.findByProductIdAndIsHiddenFalseOrderByCreatedAtDesc(productId, pageable)
                 .map(reviewMapper::toDto);
     }
     
@@ -60,6 +60,8 @@ public class ReviewService {
                 .user(user)
                 .rating(request.getRating())
                 .comment(request.getComment())
+                .imageUrl(request.getImageUrl())
+                .isHidden(false)
                 .build();
 
         Review savedReview = reviewRepository.save(review);
@@ -75,9 +77,58 @@ public class ReviewService {
         return reviewMapper.toDto(savedReview);
     }
 
+    private void recalculateProductRating(Product product) {
+        Double avgRating = reviewRepository.getAverageRatingByProductId(product.getId()).orElse(0.0);
+        long reviewCount = reviewRepository.countByProductId(product.getId());
+        
+        product.setAverageRating(avgRating);
+        product.setReviewCount(reviewCount);
+        productRepository.save(product);
+    }
+
     @Transactional
-    public void deleteReview(Long reviewId) {
+    public ReviewDto updateReview(Long reviewId, ReviewRequest request, String username) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+
+        if (!review.getUser().getAccount().getUsername().equals(username)) {
+            throw new RuntimeException("Bạn không có quyền sửa đánh giá này");
+        }
+
+        review.setRating(request.getRating());
+        review.setComment(request.getComment());
+        review.setImageUrl(request.getImageUrl());
+        
+        Review savedReview = reviewRepository.save(review);
+        recalculateProductRating(review.getProduct());
+        
+        return reviewMapper.toDto(savedReview);
+    }
+
+    @Transactional
+    public void deleteReview(Long reviewId, String username, boolean isAdmin) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+
+        if (!isAdmin && !review.getUser().getAccount().getUsername().equals(username)) {
+            throw new RuntimeException("Bạn không có quyền xóa đánh giá này");
+        }
+
+        Product product = review.getProduct();
         reviewRepository.deleteById(reviewId);
+        recalculateProductRating(product);
+    }
+
+    @Transactional
+    public ReviewDto toggleHideReview(Long reviewId) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+                
+        review.setIsHidden(!review.getIsHidden());
+        Review savedReview = reviewRepository.save(review);
+        
+        recalculateProductRating(review.getProduct());
+        return reviewMapper.toDto(savedReview);
     }
 
     @Transactional

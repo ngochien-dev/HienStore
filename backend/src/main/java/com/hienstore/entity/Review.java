@@ -41,4 +41,10 @@ public class Review {
     private String adminReply;
 
     private LocalDateTime repliedAt;
+
+    private String imageUrl;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean isHidden = false;
 }

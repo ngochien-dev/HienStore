@@ -26,7 +26,7 @@ public class AdminReviewController {
     
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteReview(@PathVariable Long id) {
-        reviewService.deleteReview(id);
+        reviewService.deleteReview(id, null, true);
         return ResponseEntity.ok().build();
     }
 
@@ -37,5 +37,10 @@ public class AdminReviewController {
             return ResponseEntity.badRequest().build();
         }
         return ResponseEntity.ok(reviewService.replyToReview(id, replyText));
+    }
+
+    @PutMapping("/{id}/toggle-hide")
+    public ResponseEntity<ReviewDto> toggleHideReview(@PathVariable Long id) {
+        return ResponseEntity.ok(reviewService.toggleHideReview(id));
     }
 }
