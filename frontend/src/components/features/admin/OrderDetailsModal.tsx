@@ -74,12 +74,12 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ isOpen, on
                   <User size={18} className="text-blue-500" /> Thông tin khách hàng
                 </h3>
                 <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Người nhận:</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500 flex items-center gap-1.5"><User size={14} /> Người nhận:</span>
                     <span className="font-medium">{order.receiverName}</span>
                   </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Điện thoại:</span>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500 flex items-center gap-1.5"><Phone size={14} /> Điện thoại:</span>
                     <span className="font-medium">{order.phone}</span>
                   </div>
                 </div>
@@ -92,8 +92,8 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ isOpen, on
                 </h3>
                 <div className="space-y-3 text-sm">
                   <div className="flex flex-col gap-1">
-                    <span className="text-gray-500">Địa chỉ giao hàng:</span>
-                    <span className="font-medium leading-relaxed">{order.shippingAddress}</span>
+                    <span className="text-gray-500 flex items-center gap-1.5"><MapPin size={14} /> Địa chỉ giao hàng:</span>
+                    <span className="font-medium leading-relaxed pl-5">{order.shippingAddress}</span>
                   </div>
                   {order.note && (
                     <div className="flex flex-col gap-1 pt-2 border-t border-gray-50 dark:border-gray-700">
