@@ -29,6 +29,7 @@ public class ChatController {
 
     // WebSocket Endpoint: Client sends to /app/chat
     @MessageMapping("/chat")
+    @org.springframework.transaction.annotation.Transactional
     public void processMessage(@Payload ChatRequest chatRequest, Principal principal) {
         String senderUsername = principal.getName();
         User sender = userRepository.findByAccountUsername(senderUsername)
@@ -80,6 +81,7 @@ public class ChatController {
     // REST endpoints to load history
     @GetMapping("/api/chat/history/{userEmail}")
     @PreAuthorize("isAuthenticated()")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<List<ChatMessageDto>> getChatHistory(Principal principal, @PathVariable String userEmail) {
         User currentUser = userRepository.findByAccountUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
