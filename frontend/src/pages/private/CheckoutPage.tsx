@@ -15,7 +15,7 @@ export const CheckoutPage = () => {
 
   const [formData, setFormData] = useState({
     receiverName: user?.fullName || '',
-    phone: user?.phone || '',
+    phone: (user as any)?.phone || '',
     shippingAddress: '',
     note: '',
     paymentMethod: 'COD',
@@ -65,7 +65,7 @@ export const CheckoutPage = () => {
     setFormData(prev => ({
       ...prev,
       receiverName: user?.fullName || '',
-      phone: user?.phone || '',
+      phone: (user as any)?.phone || '',
       shippingAddress: ''
     }))
   }
