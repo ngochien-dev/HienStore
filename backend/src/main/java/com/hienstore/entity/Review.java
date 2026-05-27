@@ -36,4 +36,9 @@ public class Review {
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
+
+    @Column(columnDefinition = "TEXT")
+    private String adminReply;
+
+    private LocalDateTime repliedAt;
 }

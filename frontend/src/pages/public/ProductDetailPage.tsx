@@ -460,9 +460,22 @@ export const ProductDetailPage = () => {
                           />
                         ))}
                       </div>
-                      <p className="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-line">
+                      <p className="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-line mb-3">
                         {review.comment}
                       </p>
+                      {review.adminReply && (
+                        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4 border-l-4 border-indigo-500 mt-3">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="font-semibold text-indigo-700 dark:text-indigo-400 text-xs uppercase tracking-wide">Phản hồi từ HienStore</span>
+                            <span className="text-[10px] text-slate-400">
+                              {review.repliedAt && new Date(review.repliedAt).toLocaleDateString('vi-VN')}
+                            </span>
+                          </div>
+                          <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line">
+                            {review.adminReply}
+                          </p>
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}

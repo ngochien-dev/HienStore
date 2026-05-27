@@ -32,6 +32,7 @@ public class OrderService {
     private final OrderMapper orderMapper;
     private final CouponService couponService;
     private final CouponRepository couponRepository;
+    private final EmailService emailService;
 
     @Transactional
     public OrderDto createOrder(String username, OrderRequest request) {
@@ -114,6 +115,17 @@ public class OrderService {
         }
 
         Order savedOrder = orderRepository.save(order);
+
+        // Send confirmation email asynchronously
+        if (user.getEmail() != null && !user.getEmail().isEmpty()) {
+            String fullName = user.getFirstName() + (user.getLastName() != null ? " " + user.getLastName() : "");
+            emailService.sendOrderConfirmationEmail(
+                user.getEmail(), 
+                fullName, 
+                savedOrder.getId().toString(), 
+                savedOrder.getTotalAmount().doubleValue()
+            );
+        }
 
         // Clear cart
         cartItemRepository.deleteAll(cartItems);

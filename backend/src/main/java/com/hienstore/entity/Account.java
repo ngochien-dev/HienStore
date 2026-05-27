@@ -3,6 +3,7 @@ package com.hienstore.entity;
 import com.hienstore.enums.Role;
 import jakarta.persistence.*;
 import lombok.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "accounts")
@@ -30,4 +31,7 @@ public class Account {
     @Column(nullable = false)
     @Builder.Default
     private Boolean isEnabled = true; // For soft delete or ban
+
+    private String resetToken;
+    private LocalDateTime resetTokenExpiry;
 }

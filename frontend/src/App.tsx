@@ -2,6 +2,7 @@ import { Routes, Route, Outlet } from 'react-router-dom'
 import { UserLayout } from './components/layout/UserLayout'
 import { LoginPage } from './pages/auth/LoginPage'
 import { RegisterPage } from './pages/auth/RegisterPage'
+import { ForgotPasswordPage } from './pages/public/ForgotPasswordPage'
 import { ProductsPage } from './pages/public/ProductsPage'
 import { ProductDetailPage } from './pages/public/ProductDetailPage'
 import { CartPage } from './pages/private/CartPage'
@@ -76,6 +77,7 @@ function App() {
       <Route element={<UserLayout><Outlet /></UserLayout>}>
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       </Route>
     </Routes>
   )

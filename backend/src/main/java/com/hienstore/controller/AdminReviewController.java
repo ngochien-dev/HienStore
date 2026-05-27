@@ -29,4 +29,13 @@ public class AdminReviewController {
         reviewService.deleteReview(id);
         return ResponseEntity.ok().build();
     }
+
+    @PutMapping("/{id}/reply")
+    public ResponseEntity<ReviewDto> replyToReview(@PathVariable Long id, @RequestBody java.util.Map<String, String> body) {
+        String replyText = body.get("replyText");
+        if (replyText == null || replyText.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        return ResponseEntity.ok(reviewService.replyToReview(id, replyText));
+    }
 }

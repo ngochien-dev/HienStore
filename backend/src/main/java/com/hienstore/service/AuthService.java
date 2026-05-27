@@ -26,6 +26,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final EmailService emailService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -84,5 +85,34 @@ public class AuthService {
                 .role(user.getAccount().getRole().name())
                 .fullName(user.getFirstName() + " " + (user.getLastName() != null ? user.getLastName() : ""))
                 .build();
+    }
+
+    @Transactional
+    public void forgotPassword(String email) {
+        Account account = accountRepository.findByUsername(email)
+                .orElseThrow(() -> new RuntimeException("Không tìm thấy tài khoản với email này"));
+
+        // Generate 6-digit code
+        String resetToken = String.format("%06d", new java.util.Random().nextInt(999999));
+        account.setResetToken(resetToken);
+        account.setResetTokenExpiry(java.time.LocalDateTime.now().plusMinutes(15));
+        accountRepository.save(account);
+
+        emailService.sendPasswordResetEmail(email, resetToken);
+    }
+
+    @Transactional
+    public void resetPassword(String token, String newPassword) {
+        Account account = accountRepository.findByResetToken(token)
+                .orElseThrow(() -> new RuntimeException("Mã xác nhận không hợp lệ hoặc đã hết hạn"));
+
+        if (account.getResetTokenExpiry().isBefore(java.time.LocalDateTime.now())) {
+            throw new RuntimeException("Mã xác nhận đã hết hạn");
+        }
+
+        account.setPassword(passwordEncoder.encode(newPassword));
+        account.setResetToken(null);
+        account.setResetTokenExpiry(null);
+        accountRepository.save(account);
     }
 }

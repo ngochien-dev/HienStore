@@ -1,140 +1,193 @@
 import { useState, useEffect } from 'react'
-import { MessageSquare, Trash2, Star } from 'lucide-react'
+import { MessageSquare, Star, Reply, Trash2, Loader2, AlertCircle } from 'lucide-react'
 import api from '../../api/axiosClient'
+import { toast } from 'react-toastify'
+
+interface Review {
+  id: number
+  productId: number
+  userId: number
+  userName: string
+  userAvatar: string | null
+  rating: number
+  comment: string
+  createdAt: string
+  adminReply: string | null
+  repliedAt: string | null
+}
 
 export const AdminReviewsPage = () => {
-  const [reviews, setReviews] = useState<any[]>([])
+  const [reviews, setReviews] = useState<Review[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [page, setPage] = useState(0)
-  const [totalPages, setTotalPages] = useState(0)
-
-  useEffect(() => {
-    fetchReviews()
-  }, [page])
+  const [replyingTo, setReplyingTo] = useState<number | null>(null)
+  const [replyText, setReplyText] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const fetchReviews = async () => {
-    setIsLoading(true)
     try {
-      const response = await api.get('/api/admin/reviews', { 
-        params: { page, size: 10, sort: 'createdAt,desc' } 
-      })
-      setReviews(response.data.content)
-      setTotalPages(response.data.totalPages)
+      setIsLoading(true)
+      const res = await api.get('/api/admin/reviews?size=50&sort=createdAt,desc')
+      setReviews(res.data.content)
     } catch (error) {
-      console.error('Failed to fetch reviews:', error)
+      console.error('Lỗi khi tải danh sách đánh giá', error)
+      toast.error('Lỗi khi tải danh sách đánh giá')
     } finally {
       setIsLoading(false)
     }
   }
 
+  useEffect(() => {
+    fetchReviews()
+  }, [])
+
   const handleDelete = async (id: number) => {
-    if (!window.confirm('Bạn có chắc chắn muốn xóa đánh giá này không?')) return
-    
+    if (!window.confirm('Bạn có chắc muốn xóa đánh giá này?')) return
     try {
       await api.delete(`/api/admin/reviews/${id}`)
-      fetchReviews()
+      toast.success('Đã xóa đánh giá')
+      setReviews(reviews.filter(r => r.id !== id))
     } catch (error) {
-      console.error('Failed to delete review:', error)
-      alert('Không thể xóa đánh giá.')
+      toast.error('Không thể xóa đánh giá')
     }
   }
 
+  const handleReplySubmit = async (id: number) => {
+    if (!replyText.trim()) return
+    
+    try {
+      setIsSubmitting(true)
+      const res = await api.put(`/api/admin/reviews/${id}/reply`, { replyText })
+      toast.success('Gửi phản hồi và email thông báo thành công!')
+      setReviews(reviews.map(r => r.id === id ? res.data : r))
+      setReplyingTo(null)
+      setReplyText('')
+    } catch (error) {
+      toast.error('Không thể gửi phản hồi')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const renderStars = (rating: number) => {
+    return Array(5).fill(0).map((_, i) => (
+      <Star key={i} size={14} className={i < rating ? 'text-amber-400 fill-amber-400' : 'text-gray-300'} />
+    ))
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-600" />
+      </div>
+    )
+  }
+
   return (
-    <div>
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+      <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Quản lý Đánh giá</h1>
-          <p className="text-gray-500 dark:text-gray-400 mt-1">Quản lý và kiểm duyệt các đánh giá của khách hàng.</p>
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-indigo-500" />
+            Quản lý Đánh giá
+          </h2>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+            Xem và trả lời phản hồi từ khách hàng. Email thông báo sẽ được gửi tự động khi bạn trả lời.
+          </p>
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700 whitespace-nowrap">
-              <tr>
-                <th className="px-6 py-4 font-semibold">Khách hàng</th>
-                <th className="px-6 py-4 font-semibold">Đánh giá</th>
-                <th className="px-6 py-4 font-semibold">Nội dung</th>
-                <th className="px-6 py-4 font-semibold">Thời gian</th>
-                <th className="px-6 py-4 font-semibold text-right">Thao tác</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {isLoading && reviews.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">Đang tải dữ liệu...</td>
-                </tr>
-              ) : reviews.map((review) => (
-                <tr key={review.id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors">
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold overflow-hidden">
-                        {review.userAvatar ? (
-                          <img src={review.userAvatar} alt="avatar" className="w-full h-full object-cover" />
-                        ) : (
-                          review.userName.charAt(0).toUpperCase()
-                        )}
+      <div className="p-6 bg-gray-50 dark:bg-gray-900/30">
+        {reviews.length === 0 ? (
+          <div className="text-center py-12 bg-white dark:bg-gray-800 rounded-xl">
+            <MessageSquare className="w-12 h-12 text-gray-300 mx-auto mb-4" />
+            <p className="text-gray-500">Chưa có đánh giá nào.</p>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {reviews.map((review) => (
+              <div key={review.id} className="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-100 dark:border-gray-700 shadow-sm">
+                <div className="flex justify-between items-start mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/50 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-bold">
+                      {review.userAvatar ? (
+                        <img src={review.userAvatar} alt="avatar" className="w-full h-full object-cover rounded-full" />
+                      ) : (
+                        review.userName.charAt(0)
+                      )}
+                    </div>
+                    <div>
+                      <h4 className="font-semibold text-gray-900 dark:text-white">{review.userName}</h4>
+                      <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <div className="flex gap-0.5">{renderStars(review.rating)}</div>
+                        <span>•</span>
+                        <span>{new Date(review.createdAt).toLocaleDateString('vi-VN')}</span>
                       </div>
-                      <span className="font-medium text-gray-900 dark:text-white">{review.userName}</span>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="flex items-center gap-1">
-                      <span className="font-bold text-amber-500">{review.rating}</span>
-                      <Star size={14} className="text-amber-500 fill-current" />
+                  </div>
+                  <button 
+                    onClick={() => handleDelete(review.id)}
+                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                    title="Xóa đánh giá"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+                
+                <p className="text-gray-700 dark:text-gray-300 mb-4 pl-14">{review.comment}</p>
+                
+                <div className="pl-14">
+                  {review.adminReply ? (
+                    <div className="bg-indigo-50 dark:bg-indigo-900/10 rounded-lg p-4 border-l-4 border-indigo-500 relative">
+                      <div className="flex items-center gap-2 mb-2">
+                        <span className="font-semibold text-indigo-700 dark:text-indigo-400 text-sm">Phản hồi của HienStore</span>
+                        <span className="text-xs text-indigo-400 dark:text-indigo-500">
+                          {review.repliedAt && new Date(review.repliedAt).toLocaleDateString('vi-VN')}
+                        </span>
+                      </div>
+                      <p className="text-gray-700 dark:text-gray-300 text-sm">{review.adminReply}</p>
                     </div>
-                  </td>
-                  <td className="px-6 py-4 min-w-[300px]">
-                    <p className="text-gray-600 dark:text-gray-300 line-clamp-2">{review.comment}</p>
-                    <div className="text-xs text-indigo-600 mt-1 cursor-pointer">ID SP: {review.productId}</div>
-                  </td>
-                  <td className="px-6 py-4 text-gray-500 whitespace-nowrap">
-                    {new Date(review.createdAt).toLocaleDateString('vi-VN')}
-                  </td>
-                  <td className="px-6 py-4 text-right whitespace-nowrap">
-                    <button 
-                      onClick={() => handleDelete(review.id)}
-                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
-                      title="Xóa đánh giá"
-                    >
-                      <Trash2 size={18} />
-                    </button>
-                  </td>
-                </tr>
-              ))}
-              
-              {!isLoading && reviews.length === 0 && (
-                <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500 flex flex-col items-center">
-                    <MessageSquare size={32} className="text-gray-300 mb-2" />
-                    Chưa có đánh giá nào.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
-        
-        {totalPages > 1 && (
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center text-sm text-gray-500">
-            <div>Trang {page + 1} / {totalPages}</div>
-            <div className="flex gap-1">
-              <button 
-                onClick={() => setPage(p => Math.max(0, p - 1))}
-                disabled={page === 0}
-                className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
-              >
-                Trước
-              </button>
-              <button 
-                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
-                disabled={page >= totalPages - 1}
-                className="px-3 py-1 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50"
-              >
-                Sau
-              </button>
-            </div>
+                  ) : (
+                    <div>
+                      {replyingTo === review.id ? (
+                        <div className="space-y-3">
+                          <textarea
+                            className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none dark:text-white"
+                            rows={3}
+                            placeholder="Nhập phản hồi của bạn..."
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                            autoFocus
+                          />
+                          <div className="flex justify-end gap-2">
+                            <button
+                              className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 rounded-lg transition-colors font-medium"
+                              onClick={() => { setReplyingTo(null); setReplyText(''); }}
+                            >
+                              Hủy
+                            </button>
+                            <button
+                              className="flex items-center gap-2 px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors disabled:opacity-50 font-medium"
+                              onClick={() => handleReplySubmit(review.id)}
+                              disabled={!replyText.trim() || isSubmitting}
+                            >
+                              {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Reply className="w-4 h-4" />}
+                              Gửi phản hồi
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <button
+                          className="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 font-medium bg-indigo-50 dark:bg-indigo-900/20 px-4 py-2 rounded-lg transition-colors"
+                          onClick={() => { setReplyingTo(review.id); setReplyText(''); }}
+                        >
+                          <Reply className="w-4 h-4" /> Trả lời khách hàng
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         )}
       </div>

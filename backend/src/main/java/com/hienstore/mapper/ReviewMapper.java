@@ -21,6 +21,8 @@ public class ReviewMapper {
                 .rating(review.getRating())
                 .comment(review.getComment())
                 .createdAt(review.getCreatedAt())
+                .adminReply(review.getAdminReply())
+                .repliedAt(review.getRepliedAt())
                 .build();
     }
 }

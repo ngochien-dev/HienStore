@@ -24,6 +24,7 @@ public class ReviewService {
     private final UserRepository userRepository;
     private final com.hienstore.repository.OrderRepository orderRepository;
     private final ReviewMapper reviewMapper;
+    private final EmailService emailService;
 
     @Transactional(readOnly = true)
     public Page<ReviewDto> getProductReviews(Long productId, Pageable pageable) {
@@ -77,5 +78,29 @@ public class ReviewService {
     @Transactional
     public void deleteReview(Long reviewId) {
         reviewRepository.deleteById(reviewId);
+    }
+
+    @Transactional
+    public ReviewDto replyToReview(Long reviewId, String replyText) {
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new RuntimeException("Review not found"));
+
+        review.setAdminReply(replyText);
+        review.setRepliedAt(java.time.LocalDateTime.now());
+        Review savedReview = reviewRepository.save(review);
+
+        // Send email notification to user
+        User user = review.getUser();
+        if (user.getEmail() != null && !user.getEmail().isEmpty()) {
+            String fullName = user.getFirstName() + (user.getLastName() != null ? " " + user.getLastName() : "");
+            emailService.sendReviewReplyEmail(
+                user.getEmail(),
+                fullName,
+                review.getProduct().getName(),
+                replyText
+            );
+        }
+
+        return reviewMapper.toDto(savedReview);
     }
 }
