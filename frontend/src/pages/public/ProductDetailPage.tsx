@@ -360,8 +360,27 @@ export const ProductDetailPage = () => {
           </div>
 
           {/* Pricing */}
-          <div className="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 bg-indigo-50/50 dark:bg-indigo-950/20 px-5 py-4 rounded-2xl inline-block font-heading">
-            {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedVariant?.price || product.basePrice)}
+          <div className="bg-indigo-50/50 dark:bg-indigo-950/20 px-5 py-4 rounded-2xl inline-block">
+            {selectedVariant?.salePrice ? (
+              <div className="flex flex-col">
+                <span className="text-sm font-semibold text-rose-500 uppercase tracking-wider mb-1">Đang Khuyến Mãi!</span>
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl font-extrabold text-rose-600 dark:text-rose-500 font-heading">
+                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedVariant.salePrice)}
+                  </span>
+                  <span className="text-lg font-semibold text-slate-400 line-through">
+                    {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedVariant.price || product.basePrice)}
+                  </span>
+                  <span className="bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400 px-2.5 py-1 rounded-md text-xs font-bold">
+                    -{Math.round((((selectedVariant.price || product.basePrice) - selectedVariant.salePrice) / (selectedVariant.price || product.basePrice)) * 100)}%
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="text-3xl font-extrabold text-indigo-600 dark:text-indigo-400 font-heading">
+                {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedVariant?.price || product.basePrice)}
+              </div>
+            )}
           </div>
 
           {/* Variants selector */}

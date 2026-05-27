@@ -16,6 +16,7 @@ public class ProductVariantRequest {
     private String size;
     private String sku;
     private BigDecimal price;
+    private BigDecimal salePrice;
     private Integer stockQuantity;
     private String imageUrl;
 }

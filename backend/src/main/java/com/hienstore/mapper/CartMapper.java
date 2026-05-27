@@ -23,8 +23,10 @@ public interface CartMapper {
     List<CartItemDto> itemsToDtoList(List<CartItem> items);
 
     default BigDecimal calculateSubTotal(CartItem item) {
-        if (item.getProductVariant() != null && item.getProductVariant().getPrice() != null) {
-            return item.getProductVariant().getPrice().multiply(BigDecimal.valueOf(item.getQuantity()));
+        if (item.getProductVariant() != null) {
+            BigDecimal basePrice = item.getProductVariant().getPrice() != null ? item.getProductVariant().getPrice() : item.getProductVariant().getProduct().getBasePrice();
+            BigDecimal price = item.getProductVariant().getSalePrice() != null ? item.getProductVariant().getSalePrice() : basePrice;
+            return price.multiply(BigDecimal.valueOf(item.getQuantity()));
         }
         return BigDecimal.ZERO;
     }

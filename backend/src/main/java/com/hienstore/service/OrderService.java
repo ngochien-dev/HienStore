@@ -74,7 +74,8 @@ public class OrderService {
             variant.setStockQuantity(variant.getStockQuantity() - cartItem.getQuantity());
             productVariantRepository.save(variant);
 
-            BigDecimal price = variant.getPrice() != null ? variant.getPrice() : variant.getProduct().getBasePrice();
+            BigDecimal basePrice = variant.getPrice() != null ? variant.getPrice() : variant.getProduct().getBasePrice();
+            BigDecimal price = variant.getSalePrice() != null ? variant.getSalePrice() : basePrice;
             BigDecimal itemTotal = price.multiply(BigDecimal.valueOf(cartItem.getQuantity()));
             totalAmount = totalAmount.add(itemTotal);
 

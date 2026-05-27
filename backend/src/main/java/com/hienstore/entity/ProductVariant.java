@@ -35,6 +35,9 @@ public class ProductVariant {
     @Column(precision = 12, scale = 2)
     private BigDecimal price; // If null, use product's basePrice
 
+    @Column(precision = 12, scale = 2)
+    private BigDecimal salePrice;
+
     @Column(nullable = false)
     @Builder.Default
     private Integer stockQuantity = 0;

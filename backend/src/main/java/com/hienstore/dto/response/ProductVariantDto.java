@@ -16,6 +16,7 @@ public class ProductVariantDto {
     private String size;
     private String sku;
     private BigDecimal price;
+    private BigDecimal salePrice;
     private Integer stockQuantity;
     private String imageUrl;
     private String productName;

@@ -11,6 +11,7 @@ export interface ProductCardProps {
     basePrice: number
     images?: { imageUrl: string; isPrimary: boolean }[]
     category?: { name: string }
+    variants?: { salePrice?: number, price?: number }[]
   }
 }
 
@@ -35,10 +36,23 @@ export const ProductCard = ({ product }: ProductCardProps) => {
     || product.images?.[0]?.imageUrl 
     || 'https://placehold.co/400x500/f3f4f6/9ca3af?text=No+Image'
 
-  const formattedPrice = new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND'
-  }).format(product.basePrice)
+  // Sale Logic
+  let minPrice = product.basePrice;
+  let originalPrice = product.basePrice;
+  let maxDiscountPercent = 0;
+
+  if (product.variants && product.variants.length > 0) {
+    const saleVariants = product.variants.filter(v => v.salePrice != null);
+    if (saleVariants.length > 0) {
+      const bestSale = saleVariants.reduce((prev, current) => (prev.salePrice! < current.salePrice!) ? prev : current);
+      minPrice = bestSale.salePrice!;
+      originalPrice = bestSale.price || product.basePrice;
+      maxDiscountPercent = Math.round(((originalPrice - minPrice) / originalPrice) * 100);
+    }
+  }
+
+  const formattedPrice = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(minPrice)
+  const formattedOriginalPrice = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(originalPrice)
 
   return (
     <div className="group relative flex flex-col bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800/80 shadow-sm hover:shadow-premium hover:-translate-y-1.5 transition-all duration-500">
@@ -71,12 +85,19 @@ export const ProductCard = ({ product }: ProductCardProps) => {
           </button>
         </div>
 
-        {/* Category Tag */}
-        {product.category?.name && (
-          <span className="absolute top-3.5 left-3.5 px-3 py-1 text-[10px] font-bold uppercase tracking-wider bg-white/90 dark:bg-slate-900/90 text-slate-800 dark:text-slate-200 rounded-full backdrop-blur-md shadow-sm border border-white/20">
-            {product.category.name}
-          </span>
-        )}
+        {/* Tags */}
+        <div className="absolute top-3.5 left-3.5 flex flex-col gap-2">
+          {maxDiscountPercent > 0 && (
+            <span className="px-3 py-1 text-[11px] font-black uppercase tracking-wider bg-rose-500 text-white rounded-full shadow-md border border-rose-600/50">
+              -{maxDiscountPercent}%
+            </span>
+          )}
+          {product.category?.name && (
+            <span className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider bg-white/90 dark:bg-slate-900/90 text-slate-800 dark:text-slate-200 rounded-full backdrop-blur-md shadow-sm border border-white/20 w-fit">
+              {product.category.name}
+            </span>
+          )}
+        </div>
       </div>
       
       {/* Content Section */}
@@ -92,11 +113,18 @@ export const ProductCard = ({ product }: ProductCardProps) => {
         <div className="mt-auto pt-3.5 border-t border-slate-50 dark:border-slate-800/60 flex items-center justify-between">
           <div className="flex flex-col">
             <span className="text-[11px] font-medium text-slate-400 dark:text-slate-500 uppercase tracking-wider">
-              Giá bán
+              {maxDiscountPercent > 0 ? 'Giá ưu đãi' : 'Giá bán'}
             </span>
-            <span className="text-base font-bold text-slate-900 dark:text-slate-50">
-              {formattedPrice}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className={`text-base font-bold ${maxDiscountPercent > 0 ? 'text-rose-600 dark:text-rose-500' : 'text-slate-900 dark:text-slate-50'}`}>
+                {formattedPrice}
+              </span>
+              {maxDiscountPercent > 0 && (
+                <span className="text-xs text-slate-400 dark:text-slate-500 line-through">
+                  {formattedOriginalPrice}
+                </span>
+              )}
+            </div>
           </div>
           
           <Link

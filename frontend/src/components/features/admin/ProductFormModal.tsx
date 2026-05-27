@@ -17,6 +17,7 @@ interface UIVariant {
   size: string
   sku: string
   price: string
+  salePrice: string
   stockQuantity: string
   imageUrl: string
 }
@@ -66,6 +67,7 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
             size: v.size || '',
             sku: v.sku || '',
             price: v.price?.toString() || '',
+            salePrice: v.salePrice?.toString() || '',
             stockQuantity: v.stockQuantity?.toString() || '0',
             imageUrl: v.imageUrl || ''
           })))
@@ -104,6 +106,7 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
         size: '',
         sku: '',
         price: '',
+        salePrice: '',
         stockQuantity: '0',
         imageUrl: ''
       }
@@ -220,6 +223,7 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
           size: v.size || 'Freesize',
           sku: v.sku,
           price: v.price ? parseFloat(v.price) : parseFloat(formData.basePrice),
+          salePrice: v.salePrice && v.salePrice.trim() !== '' ? parseFloat(v.salePrice) : null,
           stockQuantity: parseInt(v.stockQuantity) || 0,
           imageUrl: v.imageUrl
         }))
@@ -389,7 +393,29 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
                         />
                       </div>
 
-                      <div className="w-28 space-y-1">
+                      <div className="flex-1 min-w-[90px] space-y-1">
+                        <label className="text-[10px] font-semibold text-gray-500">Giá gốc *</label>
+                        <input
+                          type="number"
+                          placeholder="Mặc định"
+                          value={v.price}
+                          onChange={(e) => handleVariantChange(index, 'price', e.target.value)}
+                          className="flex h-8 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-transparent px-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-indigo-500"
+                        />
+                      </div>
+
+                      <div className="flex-1 min-w-[90px] space-y-1">
+                        <label className="text-[10px] font-semibold text-rose-500">Giá khuyến mãi</label>
+                        <input
+                          type="number"
+                          placeholder="Bỏ trống nếu ko sale"
+                          value={v.salePrice}
+                          onChange={(e) => handleVariantChange(index, 'salePrice', e.target.value)}
+                          className="flex h-8 w-full rounded-md border border-rose-300 dark:border-rose-700/50 bg-rose-50/50 dark:bg-rose-900/10 px-2.5 text-xs focus:outline-none focus:ring-1 focus:ring-rose-500 text-rose-600"
+                        />
+                      </div>
+
+                      <div className="w-20 space-y-1">
                         <label className="text-[10px] font-semibold text-gray-500">Tồn kho *</label>
                         <input
                           type="number"

@@ -99,7 +99,12 @@ export const CartPage = () => {
                             <span>Size: {item.productVariant?.size}</span>
                           </div>
                           <div className="font-medium text-indigo-600 dark:text-indigo-400">
-                            {formatPrice(item.productVariant?.price)}
+                            {formatPrice(item.productVariant?.salePrice || item.productVariant?.price)}
+                            {item.productVariant?.salePrice && (
+                              <span className="text-xs text-gray-400 line-through ml-2 font-normal">
+                                {formatPrice(item.productVariant?.price)}
+                              </span>
+                            )}
                           </div>
                         </div>
                         
