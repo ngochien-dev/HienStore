@@ -27,5 +27,17 @@ public class AdminSeeder implements CommandLineRunner {
             userRepository.save(admin);
             System.out.println("✅ MẶC ĐỊNH TẠO TÀI KHOẢN ADMIN THÀNH CÔNG: admin / admin123");
         }
+
+        if (userRepository.findByEmail("user").isEmpty()) {
+            User user = new User();
+            user.setEmail("user");
+            user.setPassword(passwordEncoder.encode("user123"));
+            user.setFullName("Test User");
+            user.setRole("ROLE_USER");
+            user.setStatus("ACTIVE");
+            
+            userRepository.save(user);
+            System.out.println("✅ MẶC ĐỊNH TẠO TÀI KHOẢN USER THÀNH CÔNG: user / user123");
+        }
     }
 }
