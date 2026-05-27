@@ -174,8 +174,18 @@ export const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({ isOpen, on
                   </div>
                 </div>
 
-                <div className="p-5 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700 rounded-b-xl">
-                  <div className="flex justify-between items-center text-lg font-bold">
+                <div className="p-5 bg-gray-50 dark:bg-gray-800/50 border-t border-gray-100 dark:border-gray-700 rounded-b-xl space-y-2">
+                  <div className="flex justify-between items-center text-sm">
+                    <span className="text-gray-500">Tạm tính:</span>
+                    <span className="text-gray-700 dark:text-gray-300 font-medium">{formatPrice(order.totalAmount + (order.discountAmount || 0))}</span>
+                  </div>
+                  {order.discountAmount > 0 && (
+                    <div className="flex justify-between items-center text-sm">
+                      <span className="text-gray-500">Giảm giá <span className="font-medium text-emerald-600">({order.couponCode})</span>:</span>
+                      <span className="text-red-500 font-medium">- {formatPrice(order.discountAmount)}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center text-lg font-bold pt-2 border-t border-gray-200 dark:border-gray-700">
                     <span className="text-gray-700 dark:text-gray-300">Tổng cộng:</span>
                     <span className="text-indigo-600 dark:text-indigo-400 text-2xl">{formatPrice(order.totalAmount)}</span>
                   </div>

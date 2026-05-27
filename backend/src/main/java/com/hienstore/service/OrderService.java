@@ -142,6 +142,13 @@ public class OrderService {
         return orderRepository.findAllWithDetails(pageable).map(orderMapper::toDto);
     }
 
+    @Transactional(readOnly = true)
+    public OrderDto getOrderByIdForAdmin(Long orderId) {
+        Order order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new RuntimeException("Order not found"));
+        return orderMapper.toDto(order);
+    }
+
     @Transactional
     public OrderDto updateOrderStatus(Long orderId, OrderStatus status, PaymentStatus paymentStatus) {
         Order order = orderRepository.findById(orderId)

@@ -17,11 +17,23 @@ export const Header = () => {
   
   const cartItemsCount = items?.reduce((acc, item) => acc + item.quantity, 0) || 0
 
+  const [storeName, setStoreName] = useState('HienStore')
+
   useEffect(() => {
     if (isAuthenticated) {
       dispatch(fetchCart())
     }
   }, [isAuthenticated, dispatch])
+
+  useEffect(() => {
+    import('../../api/axiosClient').then(({ default: api }) => {
+      api.get('/api/settings').then(res => {
+        if (res.data?.storeName) {
+          setStoreName(res.data.storeName)
+        }
+      }).catch(console.error)
+    })
+  }, [])
 
   // Track scroll position to change navbar style
   useEffect(() => {
@@ -87,7 +99,7 @@ export const Header = () => {
         {/* Logo */}
         <Link to="/" className="flex items-center space-x-2">
           <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-indigo-500 bg-clip-text text-transparent tracking-tight font-heading">
-            HienStore
+            {storeName}
           </span>
         </Link>
 
