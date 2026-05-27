@@ -168,10 +168,9 @@ public class OrderService {
         return orderMapper.toDto(orderRepository.save(order));
     }
 
-    // Dashboard stats
     @Transactional(readOnly = true)
     public DashboardStatsDto getDashboardStats() {
-        BigDecimal totalRevenue = orderRepository.sumTotalRevenueExcludingCancelled();
+        BigDecimal totalRevenue = orderRepository.sumTotalRevenueExcludingCancelled(OrderStatus.CANCELLED);
         long totalOrders = orderRepository.count();
         long pendingOrders = orderRepository.countByStatus(OrderStatus.PENDING);
         long deliveredOrders = orderRepository.countByStatus(OrderStatus.DELIVERED);

@@ -25,8 +25,8 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     Page<Order> findAllWithDetails(Pageable pageable);
 
     // Dashboard queries
-    @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.status <> 'CANCELLED'")
-    BigDecimal sumTotalRevenueExcludingCancelled();
+    @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.status <> :status")
+    BigDecimal sumTotalRevenueExcludingCancelled(@org.springframework.data.repository.query.Param("status") OrderStatus status);
 
     long countByStatus(OrderStatus status);
 
@@ -34,6 +34,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order> findByCreatedAtAfterAndStatusNot(java.time.LocalDateTime startDate, OrderStatus status);
 
-    @Query("SELECT COUNT(o) > 0 FROM Order o JOIN o.items i WHERE o.user.id = :userId AND i.productVariant.product.id = :productId AND o.status = 'DELIVERED'")
-    boolean hasUserBoughtProduct(@org.springframework.data.repository.query.Param("userId") Long userId, @org.springframework.data.repository.query.Param("productId") Long productId);
+    @Query("SELECT COUNT(o) > 0 FROM Order o JOIN o.items i WHERE o.user.id = :userId AND i.productVariant.product.id = :productId AND o.status = :status")
+    boolean hasUserBoughtProduct(@org.springframework.data.repository.query.Param("userId") Long userId, @org.springframework.data.repository.query.Param("productId") Long productId, @org.springframework.data.repository.query.Param("status") OrderStatus status);
 }

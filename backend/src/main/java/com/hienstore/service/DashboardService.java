@@ -34,7 +34,7 @@ public class DashboardService {
 
     @Transactional(readOnly = true)
     public DashboardDto getDashboardStats() {
-        BigDecimal totalRevenue = orderRepository.sumTotalRevenueExcludingCancelled();
+        BigDecimal totalRevenue = orderRepository.sumTotalRevenueExcludingCancelled(com.hienstore.entity.OrderStatus.CANCELLED);
         long totalOrders = orderRepository.count();
         long pendingOrders = orderRepository.countByStatus(com.hienstore.entity.OrderStatus.PENDING);
         long deliveredOrders = orderRepository.countByStatus(com.hienstore.entity.OrderStatus.DELIVERED);

@@ -50,7 +50,7 @@ public class ReviewService {
         }
         
         // User must have bought the product
-        if (!orderRepository.hasUserBoughtProduct(user.getId(), product.getId())) {
+        if (!orderRepository.hasUserBoughtProduct(user.getId(), product.getId(), com.hienstore.entity.OrderStatus.DELIVERED)) {
             throw new RuntimeException("Bạn cần mua và nhận được sản phẩm này trước khi đánh giá.");
         }
 
