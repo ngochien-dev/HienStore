@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
-import { MessageSquare, X, Send, Bot, Sparkles, Loader2 } from 'lucide-react'
+import { X, Send, Bot, Sparkles, Loader2 } from 'lucide-react'
 import api from '../../../api/axiosClient'
 
 interface AiMessage {

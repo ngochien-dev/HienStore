@@ -62,8 +62,8 @@ export const LiveChat = () => {
       connectHeaders: {
         Authorization: `Bearer ${token}`
       },
-      debug: (str) => {
-        // console.log(new Date(), str);
+      debug: (_str) => {
+        // console.log(new Date(), _str);
       },
       onConnect: () => {
         // Subscribe to user specific queue

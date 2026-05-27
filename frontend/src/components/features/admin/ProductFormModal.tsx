@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { X, FolderPlus, Loader2, UploadCloud, Plus, Trash2 } from 'lucide-react'
+import { X, Loader2, UploadCloud, Plus, Trash2 } from 'lucide-react'
 import { Button } from '../../ui/Button'
 import { Input } from '../../ui/Input'
 import api from '../../../api/axiosClient'
