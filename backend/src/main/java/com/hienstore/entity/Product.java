@@ -42,6 +42,18 @@ public class Product {
     @Builder.Default
     private Boolean isPublished = true;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean isHidden = false;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Double averageRating = 0.0;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private Long reviewCount = 0L;
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;

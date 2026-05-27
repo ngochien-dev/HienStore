@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import api from '../../api/axiosClient'
 import { useAppDispatch } from '../../app/hooks'
 import { addToCart } from '../../features/cart/cartSlice'
-import { Loader2, ArrowLeft, Star, ShieldCheck, Truck, Plus, Minus, ShoppingBag, CheckCircle } from 'lucide-react'
+import { Loader2, ArrowLeft, Star, ShieldCheck, Truck, Plus, Minus, ShoppingBag, CheckCircle, MessageSquare } from 'lucide-react'
 
 export const ProductDetailPage = () => {
   const { slug } = useParams<{ slug: string }>()
@@ -18,6 +18,15 @@ export const ProductDetailPage = () => {
   const [quantity, setQuantity] = useState(1)
   const [isAdding, setIsAdding] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
+  
+  // Reviews state
+  const [reviews, setReviews] = useState<any[]>([])
+  const [reviewsPage, setReviewsPage] = useState(0)
+  const [reviewsTotalPages, setReviewsTotalPages] = useState(0)
+  const [ratingInput, setRatingInput] = useState(5)
+  const [commentInput, setCommentInput] = useState('')
+  const [isSubmittingReview, setIsSubmittingReview] = useState(false)
+  const { isAuthenticated } = useAppSelector((state) => state.auth)
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -43,8 +52,54 @@ export const ProductDetailPage = () => {
       }
     }
 
-    if (slug) fetchProduct()
+    if (slug) {
+      fetchProduct()
+    }
   }, [slug, location.key])
+
+  useEffect(() => {
+    if (product?.id) {
+      fetchReviews(product.id, reviewsPage)
+    }
+  }, [product?.id, reviewsPage])
+
+  const fetchReviews = async (productId: number, pageNum: number) => {
+    try {
+      const response = await api.get(`/api/reviews/product/${productId}`, {
+        params: { page: pageNum, size: 5 }
+      })
+      setReviews(response.data.content)
+      setReviewsTotalPages(response.data.totalPages)
+    } catch (error) {
+      console.error('Error fetching reviews:', error)
+    }
+  }
+
+  const handleSubmitReview = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!isAuthenticated) {
+      showToast("Vui lòng đăng nhập để đánh giá", 'error')
+      return
+    }
+    
+    setIsSubmittingReview(true)
+    try {
+      await api.post('/api/reviews', {
+        productId: product.id,
+        rating: ratingInput,
+        comment: commentInput
+      })
+      showToast("Đánh giá của bạn đã được gửi thành công!")
+      setCommentInput('')
+      setRatingInput(5)
+      fetchReviews(product.id, 0)
+      setReviewsPage(0)
+    } catch (error: any) {
+      showToast(error.response?.data || "Có lỗi xảy ra khi gửi đánh giá", 'error')
+    } finally {
+      setIsSubmittingReview(false)
+    }
+  }
 
   const showToast = (message: string, type: 'success' | 'error' = 'success') => {
     setToast({ message, type })
@@ -171,10 +226,10 @@ export const ProductDetailPage = () => {
             </h1>
             <div className="flex items-center gap-4 text-xs font-semibold text-slate-500 uppercase tracking-wider">
               <span className="flex items-center gap-1 text-amber-500">
-                <Star size={14} fill="currentColor" /> 4.9
+                <Star size={14} fill="currentColor" /> {product.averageRating ? product.averageRating.toFixed(1) : '5.0'}
               </span>
               <span>|</span>
-              <span>Đã bán: 1.2k</span>
+              <span>{product.reviewCount || 0} Đánh giá</span>
             </div>
           </div>
 
@@ -287,6 +342,139 @@ export const ProductDetailPage = () => {
             </div>
           </div>
 
+        </div>
+      </div>
+
+      {/* Reviews Section */}
+      <div className="mt-16 border-t border-slate-200 dark:border-slate-800 pt-12">
+        <h2 className="text-2xl font-bold font-heading flex items-center gap-2 mb-8 text-slate-900 dark:text-white">
+          <MessageSquare size={24} className="text-indigo-600" /> Đánh giá sản phẩm ({product.reviewCount || 0})
+        </h2>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          
+          {/* Write a review */}
+          <div className="lg:col-span-1">
+            <div className="bg-slate-50 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-100 dark:border-slate-800">
+              <h3 className="font-bold text-lg mb-4 text-slate-800 dark:text-slate-200">Gửi đánh giá của bạn</h3>
+              {isAuthenticated ? (
+                <form onSubmit={handleSubmitReview} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Đánh giá sao</label>
+                    <div className="flex gap-2">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          onClick={() => setRatingInput(star)}
+                          className="focus:outline-none"
+                        >
+                          <Star 
+                            size={24} 
+                            className={star <= ratingInput ? "text-amber-500 fill-current" : "text-slate-300 dark:text-slate-700"} 
+                          />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-2">Nhận xét chi tiết</label>
+                    <textarea 
+                      required
+                      value={commentInput}
+                      onChange={(e) => setCommentInput(e.target.value)}
+                      placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm..."
+                      className="w-full px-4 py-3 rounded-xl border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 focus:ring-2 focus:ring-indigo-500 outline-none text-sm resize-none h-32"
+                    />
+                  </div>
+                  <button 
+                    type="submit"
+                    disabled={isSubmittingReview}
+                    className="w-full bg-slate-900 dark:bg-indigo-600 text-white font-bold py-3 rounded-xl flex items-center justify-center gap-2 hover:bg-slate-800 dark:hover:bg-indigo-700 transition-colors disabled:opacity-50"
+                  >
+                    {isSubmittingReview ? <Loader2 className="animate-spin" size={18} /> : null}
+                    Gửi đánh giá
+                  </button>
+                </form>
+              ) : (
+                <div className="text-center py-6">
+                  <p className="text-sm text-slate-500 mb-4">Vui lòng đăng nhập để gửi đánh giá</p>
+                  <button 
+                    onClick={() => navigate('/login')}
+                    className="px-6 py-2 border border-slate-300 dark:border-slate-700 rounded-lg text-sm font-semibold hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                  >
+                    Đăng nhập
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Review List */}
+          <div className="lg:col-span-2">
+            {reviews.length > 0 ? (
+              <div className="space-y-6">
+                {reviews.map((review) => (
+                  <div key={review.id} className="bg-white dark:bg-slate-950 p-6 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm flex gap-4">
+                    <div className="shrink-0 w-12 h-12 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-lg overflow-hidden">
+                      {review.userAvatar ? (
+                        <img src={review.userAvatar} alt="avatar" className="w-full h-full object-cover" />
+                      ) : (
+                        review.userName.charAt(0).toUpperCase()
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center justify-between mb-1">
+                        <h4 className="font-bold text-slate-900 dark:text-white">{review.userName}</h4>
+                        <span className="text-xs text-slate-500">{new Date(review.createdAt).toLocaleDateString('vi-VN')}</span>
+                      </div>
+                      <div className="flex items-center gap-1 mb-3">
+                        {[...Array(5)].map((_, i) => (
+                          <Star 
+                            key={i} 
+                            size={14} 
+                            className={i < review.rating ? "text-amber-500 fill-current" : "text-slate-200 dark:text-slate-800"} 
+                          />
+                        ))}
+                      </div>
+                      <p className="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-line">
+                        {review.comment}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+                
+                {/* Pagination */}
+                {reviewsTotalPages > 1 && (
+                  <div className="flex justify-center gap-2 mt-8">
+                    <button 
+                      onClick={() => setReviewsPage(p => Math.max(0, p - 1))}
+                      disabled={reviewsPage === 0}
+                      className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 disabled:opacity-50"
+                    >
+                      Trước
+                    </button>
+                    <span className="px-4 py-2 text-sm text-slate-500">
+                      Trang {reviewsPage + 1} / {reviewsTotalPages}
+                    </span>
+                    <button 
+                      onClick={() => setReviewsPage(p => Math.min(reviewsTotalPages - 1, p + 1))}
+                      disabled={reviewsPage >= reviewsTotalPages - 1}
+                      className="px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium hover:bg-slate-50 disabled:opacity-50"
+                    >
+                      Sau
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-16 bg-slate-50 dark:bg-slate-900/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                <MessageSquare size={40} className="mx-auto text-slate-300 mb-4" />
+                <h3 className="font-bold text-slate-700 dark:text-slate-300 mb-1">Chưa có đánh giá nào</h3>
+                <p className="text-sm text-slate-500">Hãy là người đầu tiên đánh giá sản phẩm này!</p>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

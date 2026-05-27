@@ -33,4 +33,7 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findTop10ByOrderByCreatedAtDesc();
 
     List<Order> findByCreatedAtAfterAndStatusNot(java.time.LocalDateTime startDate, OrderStatus status);
+
+    @Query("SELECT COUNT(o) > 0 FROM Order o JOIN o.items i WHERE o.user.id = :userId AND i.productVariant.product.id = :productId AND o.status = 'DELIVERED'")
+    boolean hasUserBoughtProduct(@org.springframework.data.repository.query.Param("userId") Long userId, @org.springframework.data.repository.query.Param("productId") Long productId);
 }

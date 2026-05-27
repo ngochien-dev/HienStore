@@ -21,7 +21,11 @@ public class ProductDto {
     private BigDecimal basePrice;
     private Boolean isPublished;
     private CategoryDto category;
+    private String specifications;
+    private Boolean isHidden;
     private LocalDateTime createdAt;
+    private Double averageRating;
+    private Long reviewCount;
     private LocalDateTime updatedAt;
     private List<ProductVariantDto> variants;
     private List<ProductImageDto> images;
