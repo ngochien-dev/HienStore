@@ -37,3 +37,5 @@ INSERT INTO product_images (product_id, image_url, is_primary) VALUES
 (2, 'https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?w=500&auto=format&fit=crop', 1),
 (3, 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=500&auto=format&fit=crop', 1),
 (4, 'https://images.unsplash.com/photo-1542272604-787c3835535d?w=500&auto=format&fit=crop', 1);
+
+
