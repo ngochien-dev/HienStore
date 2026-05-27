@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Header } from './Header'
 import { Footer } from './Footer'
+import { LiveChat } from '../features/user/LiveChat'
 
 interface UserLayoutProps {
   children: ReactNode
@@ -14,6 +15,7 @@ export const UserLayout = ({ children }: UserLayoutProps) => {
         {children}
       </main>
       <Footer />
+      <LiveChat />
     </div>
   )
 }

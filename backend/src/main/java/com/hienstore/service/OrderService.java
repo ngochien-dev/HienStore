@@ -233,7 +233,7 @@ public class OrderService {
             String statusMsg = "";
             switch (status) {
                 case PROCESSING: statusMsg = "đang được xử lý"; break;
-                case SHIPPING: statusMsg = "đang được giao đến bạn"; break;
+                case SHIPPED: statusMsg = "đang được giao đến bạn"; break;
                 case DELIVERED: statusMsg = "đã giao thành công"; break;
                 case CANCELLED: statusMsg = "đã bị hủy"; break;
                 default: statusMsg = "đã cập nhật trạng thái mới";

@@ -18,6 +18,7 @@ export const AdminLayout = ({ children }: { children: React.ReactNode }) => {
     { name: 'Danh mục', href: '/admin/categories', icon: List },
     { name: 'Khuyến mãi', href: '/admin/coupons', icon: Ticket },
     { name: 'Đánh giá', href: '/admin/reviews', icon: MessageSquare },
+    { name: 'Live Chat', href: '/admin/chat', icon: MessageSquare },
     { name: 'Khách hàng', href: '/admin/customers', icon: Users },
     { name: 'Cài đặt', href: '/admin/settings', icon: Settings },
   ]

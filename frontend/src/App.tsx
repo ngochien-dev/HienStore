@@ -23,6 +23,7 @@ import { AdminCouponsPage } from './pages/admin/AdminCouponsPage'
 import { AdminReviewsPage } from './pages/admin/AdminReviewsPage'
 import { AdminCustomersPage } from './pages/admin/AdminCustomersPage'
 import { AdminSettingsPage } from './pages/admin/AdminSettingsPage'
+import { AdminChatPage } from './pages/admin/AdminChatPage'
 
 // Public informational components
 import { HomePage } from './pages/public/HomePage'
@@ -70,6 +71,7 @@ function App() {
           <Route path="reviews" element={<AdminReviewsPage />} />
           <Route path="customers" element={<AdminCustomersPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />
+          <Route path="chat" element={<AdminChatPage />} />
         </Route>
       </Route>
 
