@@ -89,7 +89,7 @@ export const AdminChatPage = () => {
       },
       onConnect: () => {
         // Subscribe to admin's specific queue
-        client.subscribe(`/user/${user?.email}/queue/messages`, (message) => {
+        client.subscribe(`/user/queue/messages`, (message) => {
           const receivedMessage = JSON.parse(message.body) as ChatMessage
           
           // Add to current open chat if it matches the selected user

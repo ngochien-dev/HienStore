@@ -9,6 +9,7 @@ import com.hienstore.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +20,7 @@ public class NotificationService {
     private final NotificationRepository notificationRepository;
     private final NotificationMapper notificationMapper;
     private final UserRepository userRepository;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @Transactional(readOnly = true)
     public Page<NotificationDto> getUserNotifications(String email, Pageable pageable) {
@@ -76,6 +78,11 @@ public class NotificationService {
                 .targetUrl(targetUrl)
                 .isRead(false)
                 .build();
-        notificationRepository.save(notification);
+        Notification saved = notificationRepository.save(notification);
+        
+        // Push notification via websocket
+        messagingTemplate.convertAndSendToUser(
+                user.getAccount().getUsername(), "/queue/notifications", notificationMapper.toDto(saved)
+        );
     }
 }

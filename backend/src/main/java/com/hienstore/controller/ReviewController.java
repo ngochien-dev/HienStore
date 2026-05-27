@@ -12,6 +12,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/reviews")
 @RequiredArgsConstructor
@@ -33,6 +36,21 @@ public class ReviewController {
             @Valid @RequestBody ReviewRequest request,
             Authentication authentication) {
         return ResponseEntity.ok(reviewService.createReview(authentication.getName(), request));
+    }
+
+    @PostMapping("/{reviewId}/reply")
+    @PreAuthorize("isAuthenticated()")
+    public ResponseEntity<ReviewDto> replyToReview(
+            @PathVariable Long reviewId,
+            @RequestBody Map<String, String> payload,
+            Principal principal) {
+        String replyText = payload.get("reply");
+        if (replyText == null || replyText.trim().isEmpty()) {
+            return ResponseEntity.badRequest().build();
+        }
+        
+        ReviewDto reviewDto = reviewService.replyToReview(reviewId, replyText, principal.getName());
+        return ResponseEntity.ok(reviewDto);
     }
 
     @PutMapping("/{id}")

@@ -133,34 +133,49 @@ public class ReviewService {
     }
 
     @Transactional
-    public ReviewDto replyToReview(Long reviewId, String replyText) {
+    public ReviewDto replyToReview(Long reviewId, String replyText, String username) {
         Review review = reviewRepository.findById(reviewId)
                 .orElseThrow(() -> new RuntimeException("Review not found"));
 
-        review.setAdminReply(replyText);
-        review.setRepliedAt(java.time.LocalDateTime.now());
+        User replyUser = userRepository.findByAccountUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        com.hienstore.entity.ReviewReply reply = com.hienstore.entity.ReviewReply.builder()
+                .review(review)
+                .user(replyUser)
+                .content(replyText)
+                .build();
+                
+        review.getReplies().add(reply);
         Review savedReview = reviewRepository.save(review);
 
-        User user = review.getUser();
-
-        // In-App Notification
-        notificationService.createNotification(
-            user,
-            "Quản trị viên đã trả lời",
-            "Quản trị viên vừa trả lời đánh giá của bạn cho sản phẩm " + review.getProduct().getName(),
-            "REVIEW_REPLY",
-            "/product/" + review.getProduct().getSlug()
-        );
-
-        // Send email notification to user
-        if (user.getEmail() != null && !user.getEmail().isEmpty()) {
-            String fullName = user.getFirstName() + (user.getLastName() != null ? " " + user.getLastName() : "");
-            emailService.sendReviewReplyEmail(
-                user.getEmail(),
-                fullName,
-                review.getProduct().getName(),
-                replyText
+        // Notification logic
+        boolean isAdmin = replyUser.getAccount().getRole().name().equals("ADMIN");
+        User reviewOwner = review.getUser();
+        
+        if (isAdmin) {
+            // If admin replies, notify the review owner
+            notificationService.createNotification(
+                reviewOwner,
+                "Quản trị viên đã trả lời",
+                "Quản trị viên vừa trả lời đánh giá của bạn cho sản phẩm " + review.getProduct().getName(),
+                "REVIEW_REPLY",
+                "/product/" + review.getProduct().getSlug()
             );
+
+            // Send email notification to user
+            if (reviewOwner.getEmail() != null && !reviewOwner.getEmail().isEmpty()) {
+                String fullName = reviewOwner.getFirstName() + (reviewOwner.getLastName() != null ? " " + reviewOwner.getLastName() : "");
+                emailService.sendReviewReplyEmail(
+                    reviewOwner.getEmail(),
+                    fullName,
+                    review.getProduct().getName(),
+                    replyText
+                );
+            }
+        } else {
+            // If a user replies (e.g. the owner themselves), maybe notify admin, but for now we just allow it.
+            // In a real app we might notify all users involved in the thread.
         }
 
         return reviewMapper.toDto(savedReview);

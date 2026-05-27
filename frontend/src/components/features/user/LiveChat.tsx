@@ -67,7 +67,7 @@ export const LiveChat = () => {
       },
       onConnect: () => {
         // Subscribe to user specific queue
-        client.subscribe(`/user/${user?.email}/queue/messages`, (message) => {
+        client.subscribe(`/user/queue/messages`, (message) => {
           const receivedMessage = JSON.parse(message.body) as ChatMessage
           setMessages(prev => [...prev, receivedMessage])
         })

@@ -30,8 +30,8 @@ public class ChatController {
     // WebSocket Endpoint: Client sends to /app/chat
     @MessageMapping("/chat")
     public void processMessage(@Payload ChatRequest chatRequest, Principal principal) {
-        String senderEmail = principal.getName();
-        User sender = userRepository.findByEmail(senderEmail)
+        String senderUsername = principal.getName();
+        User sender = userRepository.findByAccountUsername(senderUsername)
                 .orElseThrow(() -> new RuntimeException("Sender not found"));
                 
         User recipient;
@@ -68,12 +68,12 @@ public class ChatController {
 
         // Send to recipient
         messagingTemplate.convertAndSendToUser(
-                recipient.getEmail(), "/queue/messages", dto
+                recipient.getAccount().getUsername(), "/queue/messages", dto
         );
         
         // Also send back to sender to confirm
         messagingTemplate.convertAndSendToUser(
-                sender.getEmail(), "/queue/messages", dto
+                sender.getAccount().getUsername(), "/queue/messages", dto
         );
     }
 
@@ -81,7 +81,7 @@ public class ChatController {
     @GetMapping("/api/chat/history/{userEmail}")
     @PreAuthorize("isAuthenticated()")
     public ResponseEntity<List<ChatMessageDto>> getChatHistory(Principal principal, @PathVariable String userEmail) {
-        User currentUser = userRepository.findByEmail(principal.getName())
+        User currentUser = userRepository.findByAccountUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("User not found"));
         
         User targetUser;
@@ -111,7 +111,7 @@ public class ChatController {
     @GetMapping("/api/chat/users")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserDto>> getChattedUsers(Principal principal) {
-        User admin = userRepository.findByEmail(principal.getName())
+        User admin = userRepository.findByAccountUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Admin not found"));
                 
         List<String> emails = chatMessageRepository.findChattedUserEmails(admin.getId());

@@ -35,6 +35,8 @@ export const ProductDetailPage = () => {
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [isSubmittingReview, setIsSubmittingReview] = useState(false)
   const [editingReviewId, setEditingReviewId] = useState<number | null>(null)
+  const [replyingTo, setReplyingTo] = useState<number | null>(null)
+  const [replyInput, setReplyInput] = useState('')
 
   const isLiked = product ? wishlistItems.includes(product.id) : false;
 
@@ -204,6 +206,24 @@ export const ProductDetailPage = () => {
       setReviewsPage(0)
     } catch (error: any) {
       showToast("Lỗi khi xóa đánh giá", "error")
+    }
+  }
+
+  const handleReplySubmit = async (reviewId: number) => {
+    if (!replyInput.trim()) return
+    if (!isAuthenticated) {
+      showToast("Vui lòng đăng nhập để trả lời", "error")
+      return
+    }
+    
+    try {
+      await api.post(`/api/reviews/${reviewId}/reply`, { reply: replyInput })
+      showToast("Đã gửi câu trả lời")
+      setReplyInput('')
+      setReplyingTo(null)
+      fetchReviews(product.id, reviewsPage)
+    } catch (error) {
+      showToast("Lỗi khi gửi câu trả lời", "error")
     }
   }
 
@@ -606,19 +626,68 @@ export const ProductDetailPage = () => {
                           <img src={review.imageUrl} alt="Review attachment" className="h-24 w-auto rounded-lg border border-slate-200 dark:border-slate-800 object-cover" />
                         </div>
                       )}
-                      {review.adminReply && (
-                        <div className="bg-slate-50 dark:bg-slate-900/50 rounded-lg p-4 border-l-4 border-indigo-500 mt-3">
-                          <div className="flex items-center gap-2 mb-1">
-                            <span className="font-semibold text-indigo-700 dark:text-indigo-400 text-xs uppercase tracking-wide">Phản hồi từ HienStore</span>
-                            <span className="text-[10px] text-slate-400">
-                              {review.repliedAt && new Date(review.repliedAt).toLocaleDateString('vi-VN')}
-                            </span>
-                          </div>
-                          <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line">
-                            {review.adminReply}
-                          </p>
+                      
+                      {/* Replies List */}
+                      {review.replies && review.replies.length > 0 && (
+                        <div className="mt-4 space-y-3 pl-4 border-l-2 border-indigo-100 dark:border-indigo-900/30">
+                          {review.replies.map((reply: any) => (
+                            <div key={reply.id} className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-3.5 border border-slate-100 dark:border-slate-800/80">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className={`font-semibold text-xs ${reply.userRole === 'ADMIN' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-800 dark:text-slate-200'}`}>
+                                  {reply.userName}
+                                </span>
+                                {reply.userRole === 'ADMIN' && (
+                                  <span className="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase">Quản trị viên</span>
+                                )}
+                                <span className="text-[10px] text-slate-400">
+                                  {new Date(reply.createdAt).toLocaleDateString('vi-VN')}
+                                </span>
+                              </div>
+                              <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line">
+                                {reply.content}
+                              </p>
+                            </div>
+                          ))}
                         </div>
                       )}
+
+                      {/* Reply Box */}
+                      <div className="mt-3">
+                        {replyingTo === review.id ? (
+                          <div className="flex gap-2">
+                            <input 
+                              type="text" 
+                              value={replyInput}
+                              onChange={e => setReplyInput(e.target.value)}
+                              placeholder="Nhập câu trả lời của bạn..."
+                              className="flex-1 bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-indigo-500 outline-none"
+                              autoFocus
+                              onKeyDown={e => {
+                                if (e.key === 'Enter') handleReplySubmit(review.id)
+                              }}
+                            />
+                            <button 
+                              onClick={() => handleReplySubmit(review.id)}
+                              className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold rounded-xl transition-colors"
+                            >
+                              Gửi
+                            </button>
+                            <button 
+                              onClick={() => { setReplyingTo(null); setReplyInput(''); }}
+                              className="px-4 py-2 bg-slate-200 hover:bg-slate-300 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-sm font-semibold rounded-xl transition-colors"
+                            >
+                              Hủy
+                            </button>
+                          </div>
+                        ) : (
+                          <button 
+                            onClick={() => setReplyingTo(review.id)}
+                            className="text-xs font-semibold text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center gap-1"
+                          >
+                            <MessageSquare size={12} /> Trả lời
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}

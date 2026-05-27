@@ -12,8 +12,9 @@ interface Review {
   rating: number
   comment: string
   createdAt: string
-  adminReply: string | null
-  repliedAt: string | null
+  imageUrl: string | null
+  isHidden: boolean
+  replies: any[]
   imageUrl: string | null
   isHidden: boolean
 }
@@ -172,55 +173,67 @@ export const AdminReviewsPage = () => {
                 )}
                 
                 <div className="pl-14">
-                  {review.adminReply ? (
-                    <div className="bg-indigo-50 dark:bg-indigo-900/10 rounded-lg p-4 border-l-4 border-indigo-500 relative">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span className="font-semibold text-indigo-700 dark:text-indigo-400 text-sm">Phản hồi của HienStore</span>
-                        <span className="text-xs text-indigo-400 dark:text-indigo-500">
-                          {review.repliedAt && new Date(review.repliedAt).toLocaleDateString('vi-VN')}
-                        </span>
-                      </div>
-                      <p className="text-gray-700 dark:text-gray-300 text-sm">{review.adminReply}</p>
-                    </div>
-                  ) : (
-                    <div>
-                      {replyingTo === review.id ? (
-                        <div className="space-y-3">
-                          <textarea
-                            className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none dark:text-white"
-                            rows={3}
-                            placeholder="Nhập phản hồi của bạn..."
-                            value={replyText}
-                            onChange={(e) => setReplyText(e.target.value)}
-                            autoFocus
-                          />
-                          <div className="flex justify-end gap-2">
-                            <button
-                              className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 rounded-lg transition-colors font-medium"
-                              onClick={() => { setReplyingTo(null); setReplyText(''); }}
-                            >
-                              Hủy
-                            </button>
-                            <button
-                              className="flex items-center gap-2 px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors disabled:opacity-50 font-medium"
-                              onClick={() => handleReplySubmit(review.id)}
-                              disabled={!replyText.trim() || isSubmitting}
-                            >
-                              {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Reply className="w-4 h-4" />}
-                              Gửi phản hồi
-                            </button>
+                  {/* Replies List */}
+                  {review.replies && review.replies.length > 0 && (
+                    <div className="space-y-3 mb-4">
+                      {review.replies.map((reply: any) => (
+                        <div key={reply.id} className="bg-slate-50 dark:bg-slate-900/50 rounded-xl p-4 border border-slate-100 dark:border-slate-800">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className={`font-semibold text-xs ${reply.userRole === 'ADMIN' ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-800 dark:text-slate-200'}`}>
+                              {reply.userName}
+                            </span>
+                            {reply.userRole === 'ADMIN' && (
+                              <span className="bg-indigo-100 dark:bg-indigo-900/50 text-indigo-700 dark:text-indigo-300 text-[9px] px-1.5 py-0.5 rounded font-bold uppercase">Quản trị viên</span>
+                            )}
+                            <span className="text-[10px] text-slate-400">
+                              {new Date(reply.createdAt).toLocaleDateString('vi-VN')}
+                            </span>
                           </div>
+                          <p className="text-sm text-slate-700 dark:text-slate-300 whitespace-pre-line">
+                            {reply.content}
+                          </p>
                         </div>
-                      ) : (
-                        <button
-                          className="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 font-medium bg-indigo-50 dark:bg-indigo-900/20 px-4 py-2 rounded-lg transition-colors"
-                          onClick={() => { setReplyingTo(review.id); setReplyText(''); }}
-                        >
-                          <Reply className="w-4 h-4" /> Trả lời khách hàng
-                        </button>
-                      )}
+                      ))}
                     </div>
                   )}
+
+                  <div>
+                    {replyingTo === review.id ? (
+                      <div className="space-y-3">
+                        <textarea
+                          className="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none resize-none dark:text-white"
+                          rows={3}
+                          placeholder="Nhập phản hồi của bạn..."
+                          value={replyText}
+                          onChange={(e) => setReplyText(e.target.value)}
+                          autoFocus
+                        />
+                        <div className="flex justify-end gap-2">
+                          <button
+                            className="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 rounded-lg transition-colors font-medium"
+                            onClick={() => { setReplyingTo(null); setReplyText(''); }}
+                          >
+                            Hủy
+                          </button>
+                          <button
+                            className="flex items-center gap-2 px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors disabled:opacity-50 font-medium"
+                            onClick={() => handleReplySubmit(review.id)}
+                            disabled={!replyText.trim() || isSubmitting}
+                          >
+                            {isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Reply className="w-4 h-4" />}
+                            Gửi phản hồi
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <button
+                        className="flex items-center gap-2 text-sm text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 font-medium bg-indigo-50 dark:bg-indigo-900/20 px-4 py-2 rounded-lg transition-colors"
+                        onClick={() => { setReplyingTo(review.id); setReplyText(''); }}
+                      >
+                        <Reply className="w-4 h-4" /> Thêm phản hồi
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

@@ -1,7 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { Bell, CheckCircle, Package, MessageSquare, Info, Loader2 } from 'lucide-react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import api from '../../../api/axiosClient'
+import { useAppSelector } from '../../../app/hooks'
+import { Client } from '@stomp/stompjs'
+import SockJS from 'sockjs-client'
 
 export const NotificationDropdown = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -9,9 +12,16 @@ export const NotificationDropdown = () => {
   const [unreadCount, setUnreadCount] = useState(0)
   const [isLoading, setIsLoading] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  
+  const { token, isAuthenticated } = useAppSelector(state => state.auth)
+  const navigate = useNavigate()
+  const stompClient = useRef<Client | null>(null)
 
   useEffect(() => {
-    fetchUnreadCount()
+    if (isAuthenticated) {
+      fetchUnreadCount()
+      connectWebSocket()
+    }
     
     // Close dropdown when clicking outside
     const handleClickOutside = (event: MouseEvent) => {
@@ -20,14 +30,45 @@ export const NotificationDropdown = () => {
       }
     }
     document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      if (stompClient.current) {
+        stompClient.current.deactivate()
+      }
+    }
+  }, [isAuthenticated])
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && isAuthenticated) {
       fetchNotifications()
     }
-  }, [isOpen])
+  }, [isOpen, isAuthenticated])
+
+  const connectWebSocket = () => {
+    if (!token) return
+
+    const socket = new SockJS('http://localhost:8080/ws')
+    const client = new Client({
+      webSocketFactory: () => socket,
+      connectHeaders: {
+        Authorization: `Bearer ${token}`
+      },
+      debug: () => {},
+      onConnect: () => {
+        client.subscribe(`/user/queue/notifications`, (message) => {
+          const newNotif = JSON.parse(message.body)
+          setNotifications(prev => [newNotif, ...prev])
+          setUnreadCount(prev => prev + 1)
+        })
+      },
+      onStompError: (frame) => {
+        console.error('Broker reported error: ' + frame.headers['message'])
+      },
+    })
+
+    client.activate()
+    stompClient.current = client
+  }
 
   const fetchUnreadCount = async () => {
     try {
@@ -50,14 +91,20 @@ export const NotificationDropdown = () => {
     }
   }
 
-  const markAsRead = async (id: number, isRead: boolean) => {
-    if (isRead) return
-    try {
-      await api.put(`/api/notifications/${id}/read`)
-      setNotifications(notifications.map(n => n.id === id ? { ...n, isRead: true } : n))
-      setUnreadCount(prev => Math.max(0, prev - 1))
-    } catch (error) {
-      console.error('Error marking as read:', error)
+  const handleNotificationClick = async (notif: any) => {
+    if (!notif.isRead) {
+      try {
+        await api.put(`/api/notifications/${notif.id}/read`)
+        setNotifications(notifications.map(n => n.id === notif.id ? { ...n, isRead: true } : n))
+        setUnreadCount(prev => Math.max(0, prev - 1))
+      } catch (error) {
+        console.error('Error marking as read:', error)
+      }
+    }
+    
+    setIsOpen(false)
+    if (notif.targetUrl) {
+      navigate(notif.targetUrl)
     }
   }
 
@@ -127,7 +174,7 @@ export const NotificationDropdown = () => {
                 {notifications.map((notif) => (
                   <div 
                     key={notif.id} 
-                    onClick={() => markAsRead(notif.id, notif.isRead)}
+                    onClick={() => handleNotificationClick(notif)}
                     className={`p-4 flex gap-3 transition-colors hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer ${!notif.isRead ? 'bg-indigo-50/50 dark:bg-indigo-900/10' : ''}`}
                   >
                     <div className={`mt-1 p-2 rounded-full h-fit flex-shrink-0 ${!notif.isRead ? 'bg-indigo-100 dark:bg-indigo-900/30' : 'bg-slate-100 dark:bg-slate-800'}`}>

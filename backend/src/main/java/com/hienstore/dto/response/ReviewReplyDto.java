@@ -1,21 +1,22 @@
 package com.hienstore.dto.response;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.time.LocalDateTime;
 
 @Data
 @Builder
-public class ReviewDto {
+@NoArgsConstructor
+@AllArgsConstructor
+public class ReviewReplyDto {
     private Long id;
-    private Long productId;
-    private Long userId;
     private String userName;
+    private String userEmail;
+    private String userRole;
     private String userAvatar;
-    private Integer rating;
-    private String comment;
+    private String content;
     private LocalDateTime createdAt;
-    private String imageUrl;
-    private Boolean isHidden;
-    private java.util.List<ReviewReplyDto> replies;
 }

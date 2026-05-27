@@ -37,10 +37,9 @@ public class Review {
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(columnDefinition = "TEXT")
-    private String adminReply;
-
-    private LocalDateTime repliedAt;
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private java.util.List<ReviewReply> replies = new java.util.ArrayList<>();
 
     private String imageUrl;
 
