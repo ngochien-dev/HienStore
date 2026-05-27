@@ -19,6 +19,8 @@ public class OrderRequest {
 
     private String note;
 
+    private String couponCode;
+
     @NotNull(message = "Payment method is required")
     private PaymentMethod paymentMethod;
 }

@@ -29,6 +29,12 @@ public class Order {
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal totalAmount;
 
+    @Column(precision = 12, scale = 2)
+    private BigDecimal discountAmount;
+
+    @Column(length = 50)
+    private String couponCode;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default

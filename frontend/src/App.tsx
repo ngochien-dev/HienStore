@@ -16,6 +16,7 @@ import { AdminDashboardPage } from './pages/admin/AdminDashboardPage'
 import { AdminOrdersPage } from './pages/admin/AdminOrdersPage'
 import { AdminProductsPage } from './pages/admin/AdminProductsPage'
 import { AdminCategoriesPage } from './pages/admin/AdminCategoriesPage'
+import { AdminCouponsPage } from './pages/admin/AdminCouponsPage'
 import { AdminCustomersPage } from './pages/admin/AdminCustomersPage'
 import { AdminSettingsPage } from './pages/admin/AdminSettingsPage'
 
@@ -59,6 +60,7 @@ function App() {
           <Route path="orders" element={<AdminOrdersPage />} />
           <Route path="products" element={<AdminProductsPage />} />
           <Route path="categories" element={<AdminCategoriesPage />} />
+          <Route path="coupons" element={<AdminCouponsPage />} />
           <Route path="customers" element={<AdminCustomersPage />} />
           <Route path="settings" element={<AdminSettingsPage />} />
         </Route>

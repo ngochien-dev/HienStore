@@ -3,6 +3,7 @@ package com.hienstore.service;
 import com.hienstore.dto.request.OrderRequest;
 import com.hienstore.dto.response.DashboardStatsDto;
 import com.hienstore.dto.response.OrderDto;
+import com.hienstore.dto.response.CouponDto;
 import com.hienstore.entity.*;
 import com.hienstore.mapper.OrderMapper;
 import com.hienstore.repository.*;
@@ -29,6 +30,8 @@ public class OrderService {
     private final ProductVariantRepository productVariantRepository;
     private final ProductRepository productRepository;
     private final OrderMapper orderMapper;
+    private final CouponService couponService;
+    private final CouponRepository couponRepository;
 
     @Transactional
     public OrderDto createOrder(String username, OrderRequest request) {
@@ -84,6 +87,31 @@ public class OrderService {
 
         order.setTotalAmount(totalAmount);
         order.setItems(orderItems);
+        
+        // Handle Coupon
+        BigDecimal discountAmount = BigDecimal.ZERO;
+        if (request.getCouponCode() != null && !request.getCouponCode().trim().isEmpty()) {
+            CouponDto coupon = couponService.validateCoupon(request.getCouponCode(), totalAmount);
+            if (coupon.getDiscountType().equals("PERCENTAGE")) {
+                discountAmount = totalAmount.multiply(coupon.getDiscountValue()).divide(BigDecimal.valueOf(100));
+                if (coupon.getMaxDiscountAmount() != null && discountAmount.compareTo(coupon.getMaxDiscountAmount()) > 0) {
+                    discountAmount = coupon.getMaxDiscountAmount();
+                }
+            } else {
+                discountAmount = coupon.getDiscountValue();
+            }
+            if (discountAmount.compareTo(totalAmount) > 0) {
+                discountAmount = totalAmount; // Cap discount to total amount
+            }
+            
+            order.setDiscountAmount(discountAmount);
+            order.setCouponCode(coupon.getCode());
+            order.setTotalAmount(totalAmount.subtract(discountAmount));
+            
+            Coupon couponEntity = couponRepository.findByCode(coupon.getCode()).get();
+            couponEntity.setUsedCount(couponEntity.getUsedCount() + 1);
+            couponRepository.save(couponEntity);
+        }
 
         Order savedOrder = orderRepository.save(order);
 

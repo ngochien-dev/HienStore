@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { useAppSelector, useAppDispatch } from '../../app/hooks'
 import { createOrder } from '../../features/order/orderSlice'
 import { fetchCart } from '../../features/cart/cartSlice'
-import { Loader2, ArrowLeft, CreditCard, Truck } from 'lucide-react'
+import { Loader2, ArrowLeft, CreditCard, Truck, Ticket, Check, X } from 'lucide-react'
+import api from '../../api/axiosClient'
 
 export const CheckoutPage = () => {
   const navigate = useNavigate()
@@ -17,8 +18,14 @@ export const CheckoutPage = () => {
     phone: '',
     shippingAddress: '',
     note: '',
-    paymentMethod: 'COD'
+    paymentMethod: 'COD',
+    couponCode: ''
   })
+  
+  const [couponCodeInput, setCouponCodeInput] = useState('')
+  const [couponError, setCouponError] = useState('')
+  const [appliedCoupon, setAppliedCoupon] = useState<any>(null)
+  const [isApplyingCoupon, setIsApplyingCoupon] = useState(false)
 
   useEffect(() => {
     dispatch(fetchCart())
@@ -43,6 +50,53 @@ export const CheckoutPage = () => {
     const { name, value } = e.target
     setFormData(prev => ({ ...prev, [name]: value }))
   }
+
+  const handleApplyCoupon = async () => {
+    if (!couponCodeInput.trim()) return
+    setIsApplyingCoupon(true)
+    setCouponError('')
+    
+    try {
+      const response = await api.get('/api/coupons/validate', {
+        params: {
+          code: couponCodeInput.trim(),
+          orderValue: totalAmount
+        }
+      })
+      
+      setAppliedCoupon(response.data)
+      setFormData(prev => ({ ...prev, couponCode: response.data.code }))
+      setCouponCodeInput('')
+    } catch (error: any) {
+      setCouponError(error.response?.data || 'Mã giảm giá không hợp lệ')
+      setAppliedCoupon(null)
+      setFormData(prev => ({ ...prev, couponCode: '' }))
+    } finally {
+      setIsApplyingCoupon(false)
+    }
+  }
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null)
+    setFormData(prev => ({ ...prev, couponCode: '' }))
+  }
+
+  const getDiscountAmount = () => {
+    if (!appliedCoupon) return 0
+    let discount = 0
+    if (appliedCoupon.discountType === 'PERCENTAGE') {
+      discount = totalAmount * (appliedCoupon.discountValue / 100)
+      if (appliedCoupon.maxDiscountAmount && discount > appliedCoupon.maxDiscountAmount) {
+        discount = appliedCoupon.maxDiscountAmount
+      }
+    } else {
+      discount = appliedCoupon.discountValue
+    }
+    return Math.min(discount, totalAmount) // Cannot discount more than total
+  }
+
+  const discountAmount = getDiscountAmount()
+  const finalTotalAmount = Math.max(0, totalAmount - discountAmount)
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -228,10 +282,60 @@ export const CheckoutPage = () => {
                 <span>Phí giao hàng:</span>
                 <span>Miễn phí</span>
               </div>
+              {appliedCoupon && (
+                <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
+                  <span>Giảm giá ({appliedCoupon.code}):</span>
+                  <span>-{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(discountAmount)}</span>
+                </div>
+              )}
               <div className="flex justify-between text-xl font-bold pt-3 border-t dark:border-gray-700">
                 <span>Tổng cộng:</span>
-                <span className="text-indigo-600 dark:text-indigo-400">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(totalAmount)}</span>
+                <span className="text-indigo-600 dark:text-indigo-400">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(finalTotalAmount)}</span>
               </div>
+            </div>
+            
+            <div className="mt-6 pt-6 border-t dark:border-gray-700">
+              <h3 className="font-semibold mb-3 flex items-center gap-2 text-gray-800 dark:text-gray-200">
+                <Ticket size={18} className="text-indigo-600" />
+                Mã giảm giá
+              </h3>
+              
+              {!appliedCoupon ? (
+                <div>
+                  <div className="flex gap-2">
+                    <input 
+                      type="text"
+                      value={couponCodeInput}
+                      onChange={(e) => setCouponCodeInput(e.target.value.toUpperCase())}
+                      placeholder="Nhập mã giảm giá..."
+                      className="flex-1 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500 bg-transparent uppercase"
+                    />
+                    <button 
+                      type="button"
+                      onClick={handleApplyCoupon}
+                      disabled={isApplyingCoupon || !couponCodeInput.trim()}
+                      className="px-4 py-2 bg-gray-900 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-800 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
+                    >
+                      {isApplyingCoupon ? <Loader2 size={18} className="animate-spin" /> : 'Áp dụng'}
+                    </button>
+                  </div>
+                  {couponError && <p className="text-red-500 text-sm mt-2 flex items-center gap-1"><X size={14} /> {couponError}</p>}
+                </div>
+              ) : (
+                <div className="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/30 rounded-lg">
+                  <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+                    <Check size={18} />
+                    <span className="font-semibold">{appliedCoupon.code}</span>
+                  </div>
+                  <button 
+                    type="button"
+                    onClick={handleRemoveCoupon}
+                    className="text-red-500 hover:text-red-700 text-sm font-medium"
+                  >
+                    Bỏ mã
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>

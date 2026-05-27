@@ -155,8 +155,8 @@ export const CartPage = () => {
                   <span>{formatPrice(totalAmount)}</span>
                 </div>
                 <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                  <span>Giảm giá</span>
-                  <span>0 ₫</span>
+                  <span>Khuyến mãi</span>
+                  <span className="text-sm italic text-indigo-500">Nhập ở bước thanh toán</span>
                 </div>
                 <div className="flex justify-between text-gray-600 dark:text-gray-400">
                   <span>Phí vận chuyển</span>
