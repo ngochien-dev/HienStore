@@ -143,7 +143,7 @@ export const AiChatWidget = () => {
             </form>
             <div className="text-center mt-2">
               <span className="text-[9px] text-slate-400 flex items-center justify-center gap-1">
-                Powered by <Sparkles size={8} /> Gemini 2.0 Flash
+                Powered by <Sparkles size={8} /> Gemini 2.5 Flash
               </span>
             </div>
           </div>

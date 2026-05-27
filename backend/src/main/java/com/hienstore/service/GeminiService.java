@@ -43,7 +43,7 @@ public class GeminiService {
         try {
             // 1. Build context from top products
             List<Product> topProducts = productRepository.findAll().stream()
-                    .filter(Product::isPublished)
+                    .filter(p -> p.getIsPublished() != null && p.getIsPublished())
                     .limit(10)
                     .collect(Collectors.toList());
 
