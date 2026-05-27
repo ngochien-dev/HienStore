@@ -14,6 +14,9 @@ import java.util.Optional;
 public interface CouponRepository extends JpaRepository<Coupon, Long> {
     Optional<Coupon> findByCode(String code);
 
+    @Query("SELECT c FROM Coupon c WHERE c.isActive = true AND (c.expiryDate IS NULL OR c.expiryDate > CURRENT_TIMESTAMP) AND (c.usageLimit = 0 OR c.usedCount < c.usageLimit)")
+    java.util.List<Coupon> findActiveCoupons();
+
     @Query("SELECT c FROM Coupon c WHERE " +
            "(:keyword IS NULL OR LOWER(c.code) LIKE LOWER(CONCAT('%', :keyword, '%')))")
     Page<Coupon> searchCoupons(@Param("keyword") String keyword, Pageable pageable);

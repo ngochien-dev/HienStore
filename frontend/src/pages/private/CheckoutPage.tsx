@@ -26,9 +26,15 @@ export const CheckoutPage = () => {
   const [couponError, setCouponError] = useState('')
   const [appliedCoupon, setAppliedCoupon] = useState<any>(null)
   const [isApplyingCoupon, setIsApplyingCoupon] = useState(false)
+  const [activeCoupons, setActiveCoupons] = useState<any[]>([])
 
   useEffect(() => {
     dispatch(fetchCart())
+    
+    // Fetch active coupons
+    api.get('/api/coupons/active')
+      .then(res => setActiveCoupons(res.data || []))
+      .catch(console.error)
   }, [dispatch])
 
   // If order is created successfully
@@ -68,7 +74,7 @@ export const CheckoutPage = () => {
       setFormData(prev => ({ ...prev, couponCode: response.data.code }))
       setCouponCodeInput('')
     } catch (error: any) {
-      setCouponError(error.response?.data || 'Mã giảm giá không hợp lệ')
+      setCouponError(error.response?.data?.message || typeof error.response?.data === 'string' ? error.response?.data : 'Mã giảm giá không hợp lệ')
       setAppliedCoupon(null)
       setFormData(prev => ({ ...prev, couponCode: '' }))
     } finally {
@@ -320,6 +326,50 @@ export const CheckoutPage = () => {
                     </button>
                   </div>
                   {couponError && <p className="text-red-500 text-sm mt-2 flex items-center gap-1"><X size={14} /> {couponError}</p>}
+                  
+                  {activeCoupons.length > 0 && (
+                    <div className="mt-4 border-t dark:border-gray-700 pt-3">
+                      <p className="text-sm font-medium text-gray-500 mb-2">Mã giảm giá có sẵn:</p>
+                      <div className="flex flex-col gap-2">
+                        {activeCoupons.map(coupon => {
+                          const isEligible = totalAmount >= coupon.minOrderValue
+                          return (
+                            <button
+                              key={coupon.id}
+                              type="button"
+                              onClick={() => {
+                                if (isEligible) {
+                                  setCouponCodeInput(coupon.code)
+                                }
+                              }}
+                              className={`text-left p-3 border rounded-xl transition-all duration-300 relative overflow-hidden ${
+                                isEligible 
+                                  ? 'border-indigo-200 bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 cursor-pointer'
+                                  : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800 opacity-60 cursor-not-allowed'
+                              }`}
+                            >
+                              <div className="flex justify-between items-center mb-1">
+                                <span className="font-bold text-indigo-700 dark:text-indigo-400">{coupon.code}</span>
+                                <span className="text-xs font-semibold text-emerald-600 dark:text-emerald-400">
+                                  Giảm {coupon.discountType === 'PERCENTAGE' ? `${coupon.discountValue}%` : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(coupon.discountValue)}
+                                </span>
+                              </div>
+                              {coupon.minOrderValue > 0 && (
+                                <p className="text-[11px] text-gray-500 dark:text-gray-400">
+                                  Đơn tối thiểu: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(coupon.minOrderValue)}
+                                </p>
+                              )}
+                              {!isEligible && (
+                                <p className="text-[10px] text-red-500 font-medium mt-1">
+                                  Chưa đạt giá trị đơn hàng tối thiểu
+                                </p>
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="flex items-center justify-between p-3 bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/30 rounded-lg">

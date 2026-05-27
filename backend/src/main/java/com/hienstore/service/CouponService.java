@@ -29,6 +29,11 @@ public class CouponService {
         return couponRepository.findAll(pageable).map(couponMapper::toDto);
     }
 
+    @Transactional(readOnly = true)
+    public java.util.List<CouponDto> getActiveCoupons() {
+        return couponRepository.findActiveCoupons().stream().map(couponMapper::toDto).collect(java.util.stream.Collectors.toList());
+    }
+
     @Transactional
     public CouponDto createCoupon(CouponRequest request) {
         if (couponRepository.findByCode(request.getCode()).isPresent()) {

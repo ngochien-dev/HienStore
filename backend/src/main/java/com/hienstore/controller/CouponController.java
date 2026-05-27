@@ -22,4 +22,9 @@ public class CouponController {
             @RequestParam BigDecimal orderValue) {
         return ResponseEntity.ok(couponService.validateCoupon(code, orderValue));
     }
+
+    @GetMapping("/active")
+    public ResponseEntity<java.util.List<CouponDto>> getActiveCoupons() {
+        return ResponseEntity.ok(couponService.getActiveCoupons());
+    }
 }
