@@ -79,8 +79,9 @@ public class PaymentController {
                     if ("00".equals(vnp_ResponseCode)) {
                         // Success
                         // Update order status if it's PENDING
-                        if ("PENDING".equals(order.getStatus())) {
-                            order.setStatus("PROCESSING");
+                        if (com.hienstore.entity.OrderStatus.PENDING.equals(order.getStatus())) {
+                            order.setStatus(com.hienstore.entity.OrderStatus.PROCESSING);
+                            order.setPaymentStatus(com.hienstore.entity.PaymentStatus.PAID);
                             orderRepository.save(order);
                         }
                         response.put("success", true);
