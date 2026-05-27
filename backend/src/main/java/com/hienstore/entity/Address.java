@@ -16,6 +16,16 @@ public class Address {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
+
+    @Column(length = 100)
+    private String fullName;
+
+    @Column(length = 20)
+    private String phone;
+
     @Column(length = 50)
     private String streetNumber;
 
@@ -30,6 +40,9 @@ public class Address {
 
     @Column(length = 100)
     private String city;
+
+    @Builder.Default
+    private Boolean isDefault = false;
 
     public String getFullAddress() {
         StringBuilder sb = new StringBuilder();

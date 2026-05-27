@@ -22,6 +22,8 @@ export const ProductDetailPage = () => {
   const [isAdding, setIsAdding] = useState(false)
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null)
   
+  const [relatedProducts, setRelatedProducts] = useState<any[]>([])
+  
   // Reviews state
   const [reviews, setReviews] = useState<any[]>([])
   const [reviewsPage, setReviewsPage] = useState(0)
@@ -62,6 +64,14 @@ export const ProductDetailPage = () => {
         // Select first variant
         if (data.variants && data.variants.length > 0) {
           setSelectedVariant(data.variants[0])
+        }
+
+        // Fetch related products
+        try {
+          const relatedRes = await api.get(`/api/products/${data.id}/related`)
+          setRelatedProducts(relatedRes.data)
+        } catch (error) {
+          console.error('Error fetching related products:', error)
         }
       } catch (error) {
         console.error('Error fetching product:', error)
@@ -646,6 +656,56 @@ export const ProductDetailPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Related Products Section */}
+      {relatedProducts.length > 0 && (
+        <div className="mt-20 border-t border-slate-200 dark:border-slate-800 pt-12">
+          <h2 className="text-2xl font-bold font-heading mb-8 text-slate-900 dark:text-white">
+            Sản phẩm tương tự
+          </h2>
+          <div className="flex gap-6 overflow-x-auto pb-6 scrollbar-thin snap-x">
+            {relatedProducts.map((p) => (
+              <div 
+                key={p.id} 
+                className="w-[280px] shrink-0 snap-start bg-white dark:bg-slate-900 rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden group cursor-pointer hover:shadow-lg transition-all"
+                onClick={() => {
+                  window.scrollTo(0, 0)
+                  navigate(`/product/${p.slug}`)
+                }}
+              >
+                <div className="aspect-[4/5] relative overflow-hidden bg-slate-50 dark:bg-slate-950">
+                  {p.images && p.images.length > 0 ? (
+                    <img 
+                      src={p.images[0].imageUrl} 
+                      alt={p.name} 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-400">Không có ảnh</div>
+                  )}
+                  {p.variants && p.variants[0]?.stockQuantity < 1 && (
+                    <div className="absolute top-3 left-3 bg-red-500 text-white text-[10px] font-bold px-2 py-1 rounded-md uppercase">Hết hàng</div>
+                  )}
+                </div>
+                <div className="p-5">
+                  <h3 className="font-bold text-slate-900 dark:text-white line-clamp-1 mb-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                    {p.name}
+                  </h3>
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold text-indigo-600 dark:text-indigo-400 font-heading">
+                      {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p.basePrice)}
+                    </span>
+                    <div className="flex items-center gap-1 text-xs text-slate-500">
+                      <Star size={12} className="text-amber-500 fill-current" />
+                      <span>{p.averageRating ? p.averageRating.toFixed(1) : '5.0'}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

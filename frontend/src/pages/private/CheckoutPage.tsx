@@ -15,12 +15,15 @@ export const CheckoutPage = () => {
 
   const [formData, setFormData] = useState({
     receiverName: user?.fullName || '',
-    phone: '',
+    phone: user?.phone || '',
     shippingAddress: '',
     note: '',
     paymentMethod: 'COD',
     couponCode: ''
   })
+  
+  const [userAddresses, setUserAddresses] = useState<any[]>([])
+  const [selectedAddressId, setSelectedAddressId] = useState<number | 'manual' | null>('manual')
   
   const [couponCodeInput, setCouponCodeInput] = useState('')
   const [couponError, setCouponError] = useState('')
@@ -35,7 +38,37 @@ export const CheckoutPage = () => {
     api.get('/api/coupons/active')
       .then(res => setActiveCoupons(res.data || []))
       .catch(console.error)
-  }, [dispatch])
+
+    if (user) {
+      api.get('/api/addresses').then(res => {
+        setUserAddresses(res.data)
+        if (res.data.length > 0) {
+          const defaultAddr = res.data.find((a: any) => a.isDefault) || res.data[0]
+          handleSelectAddress(defaultAddr)
+        }
+      }).catch(console.error)
+    }
+  }, [dispatch, user])
+
+  const handleSelectAddress = (addr: any) => {
+    setSelectedAddressId(addr.id)
+    setFormData(prev => ({
+      ...prev,
+      receiverName: addr.fullName,
+      phone: addr.phone,
+      shippingAddress: addr.fullAddress
+    }))
+  }
+
+  const handleManualAddress = () => {
+    setSelectedAddressId('manual')
+    setFormData(prev => ({
+      ...prev,
+      receiverName: user?.fullName || '',
+      phone: user?.phone || '',
+      shippingAddress: ''
+    }))
+  }
 
   // If order is created successfully
   useEffect(() => {
@@ -166,7 +199,47 @@ export const CheckoutPage = () => {
                 Thông tin giao hàng
               </h2>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              {userAddresses.length > 0 && (
+                <div className="mb-6 space-y-3">
+                  <label className="block text-sm font-bold text-gray-800 dark:text-gray-200 mb-2">Chọn địa chỉ đã lưu</label>
+                  {userAddresses.map(addr => (
+                    <label key={addr.id} className={`flex items-start p-4 border rounded-xl cursor-pointer transition-colors ${selectedAddressId === addr.id ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 ring-1 ring-indigo-600' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>
+                      <input 
+                        type="radio" 
+                        name="addressSelection" 
+                        checked={selectedAddressId === addr.id}
+                        onChange={() => handleSelectAddress(addr)}
+                        className="mt-1 w-4 h-4 text-indigo-600"
+                      />
+                      <div className="ml-3 flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <span className="font-bold text-gray-900 dark:text-white">{addr.fullName}</span>
+                          <span className="text-gray-500 text-sm">| {addr.phone}</span>
+                          {addr.isDefault && <span className="text-[10px] bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded uppercase font-bold">Mặc định</span>}
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{addr.fullAddress}</p>
+                      </div>
+                    </label>
+                  ))}
+                  
+                  <label className={`flex items-center p-4 border rounded-xl cursor-pointer transition-colors ${selectedAddressId === 'manual' ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 ring-1 ring-indigo-600' : 'border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'}`}>
+                      <input 
+                        type="radio" 
+                        name="addressSelection" 
+                        checked={selectedAddressId === 'manual'}
+                        onChange={handleManualAddress}
+                        className="w-4 h-4 text-indigo-600"
+                      />
+                      <div className="ml-3">
+                        <span className="font-bold text-gray-900 dark:text-white">Nhập địa chỉ mới</span>
+                      </div>
+                  </label>
+                </div>
+              )}
+
+              {selectedAddressId === 'manual' && (
+                <>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Họ và tên người nhận *</label>
                   <input 
@@ -203,6 +276,8 @@ export const CheckoutPage = () => {
                   required
                 />
               </div>
+              </>
+              )}
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Ghi chú cho đơn hàng</label>

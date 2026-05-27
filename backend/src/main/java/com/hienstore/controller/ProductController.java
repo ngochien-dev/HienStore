@@ -83,4 +83,10 @@ public class ProductController {
         Pageable pageable = PageRequest.of(page, size, sort);
         return ResponseEntity.ok(productService.filterProducts(categoryId, minPrice, maxPrice, keyword, pageable));
     }
+
+    @Operation(summary = "Get related products")
+    @GetMapping("/{id}/related")
+    public ResponseEntity<java.util.List<ProductDto>> getRelatedProducts(@PathVariable Long id) {
+        return ResponseEntity.ok(productService.getRelatedProducts(id));
+    }
 }

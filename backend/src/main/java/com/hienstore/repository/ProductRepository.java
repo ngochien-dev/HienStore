@@ -21,6 +21,8 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     Page<Product> findByCategoryIdAndIsPublishedTrue(Long categoryId, Pageable pageable);
 
+    java.util.List<Product> findTop8ByCategoryIdAndIdNotAndIsPublishedTrueOrderByCreatedAtDesc(Long categoryId, Long productId);
+
     @Query("SELECT p FROM Product p WHERE p.isPublished = true " +
            "AND (:categoryId IS NULL OR p.category.id = :categoryId) " +
            "AND (:minPrice IS NULL OR p.basePrice >= :minPrice) " +

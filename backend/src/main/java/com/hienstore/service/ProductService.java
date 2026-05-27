@@ -62,6 +62,17 @@ public class ProductService {
                 .map(productMapper::toDto);
     }
 
+    @Transactional(readOnly = true)
+    public java.util.List<ProductDto> getRelatedProducts(Long productId) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found"));
+        return productRepository.findTop8ByCategoryIdAndIdNotAndIsPublishedTrueOrderByCreatedAtDesc(
+                product.getCategory().getId(), productId)
+                .stream()
+                .map(productMapper::toDto)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
     @CacheEvict(value = "products", allEntries = true)
     @Transactional
     public ProductDto createProduct(com.hienstore.dto.request.ProductRequest request) {
