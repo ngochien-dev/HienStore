@@ -44,4 +44,11 @@ public class AuthController {
         authService.resetPassword(token, newPassword);
         return ResponseEntity.ok("Đổi mật khẩu thành công");
     }
+
+    @Operation(summary = "Get current user profile")
+    @GetMapping("/me")
+    @org.springframework.security.access.prepost.PreAuthorize("isAuthenticated()")
+    public ResponseEntity<AuthResponse> getMe(java.security.Principal principal) {
+        return ResponseEntity.ok(authService.getMe(principal.getName()));
+    }
 }

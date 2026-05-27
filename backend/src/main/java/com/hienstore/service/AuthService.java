@@ -119,4 +119,19 @@ public class AuthService {
         account.setResetTokenExpiry(null);
         accountRepository.save(account);
     }
+
+    public AuthResponse getMe(String username) {
+        var user = userRepository.findByAccountUsername(username)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return AuthResponse.builder()
+                .userId(user.getId())
+                .email(user.getEmail())
+                .role(user.getAccount().getRole().name())
+                .fullName(user.getFirstName() + " " + (user.getLastName() != null ? user.getLastName() : ""))
+                .point(user.getPoint())
+                .userType(user.getUserType().name())
+                .token("") // No need to send token back
+                .build();
+    }
 }
