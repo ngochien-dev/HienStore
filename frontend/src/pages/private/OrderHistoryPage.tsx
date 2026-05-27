@@ -1,15 +1,33 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useAppSelector, useAppDispatch } from '../../app/hooks'
 import { fetchOrders } from '../../features/order/orderSlice'
-import { Loader2, Package, Calendar, MapPin, Phone } from 'lucide-react'
+import { Loader2, Package, Calendar, MapPin, Phone, XCircle } from 'lucide-react'
+import api from '../../api/axiosClient'
 
 export const OrderHistoryPage = () => {
   const dispatch = useAppDispatch()
   const { orders, isLoading } = useAppSelector((state) => state.order)
+  const [cancelingId, setCancelingId] = useState<number | null>(null)
 
   useEffect(() => {
     dispatch(fetchOrders({ page: 0, size: 20 }))
   }, [dispatch])
+
+  const handleCancelOrder = async (orderId: number) => {
+    if (window.confirm('Bạn có chắc chắn muốn hủy đơn hàng này không?')) {
+      try {
+        setCancelingId(orderId)
+        await api.post(`/api/orders/${orderId}/cancel`)
+        // Refresh orders list
+        dispatch(fetchOrders({ page: 0, size: 20 }))
+      } catch (error) {
+        alert('Không thể hủy đơn hàng. Vui lòng thử lại.')
+        console.error(error)
+      } finally {
+        setCancelingId(null)
+      }
+    }
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -114,6 +132,23 @@ export const OrderHistoryPage = () => {
                       {order.paymentStatus === 'PAID' ? 'Đã thanh toán' : 'Chưa thanh toán'}
                     </p>
                   </div>
+                  
+                  {order.status === 'PENDING' && (
+                    <div className="pt-4 mt-4 border-t border-gray-100 dark:border-gray-700">
+                      <button
+                        onClick={() => handleCancelOrder(order.id)}
+                        disabled={cancelingId === order.id}
+                        className="w-full flex justify-center items-center gap-2 py-2 px-4 border border-red-200 text-red-600 rounded-lg hover:bg-red-50 disabled:opacity-50 transition-colors"
+                      >
+                        {cancelingId === order.id ? (
+                          <Loader2 size={18} className="animate-spin" />
+                        ) : (
+                          <XCircle size={18} />
+                        )}
+                        <span>Hủy đơn hàng</span>
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

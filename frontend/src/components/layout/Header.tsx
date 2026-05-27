@@ -170,6 +170,14 @@ export const Header = () => {
                 )}
                 
                 <Link 
+                  to="/profile" 
+                  className="p-2 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-all duration-300" 
+                  title="Hồ sơ cá nhân"
+                >
+                  <User size={20} />
+                </Link>
+                
+                <Link 
                   to="/orders" 
                   className="p-2 text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-all duration-300" 
                   title="Đơn hàng"

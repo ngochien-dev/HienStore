@@ -8,6 +8,7 @@ import { CartPage } from './pages/private/CartPage'
 import { CheckoutPage } from './pages/private/CheckoutPage'
 import { OrderSuccessPage } from './pages/private/OrderSuccessPage'
 import { OrderHistoryPage } from './pages/private/OrderHistoryPage'
+import { ProfilePage } from './pages/private/ProfilePage'
 
 // Admin Components
 import { AdminLayout } from './components/layout/AdminLayout'
@@ -43,6 +44,7 @@ function App() {
         <Route path="/checkout" element={<CheckoutPage />} />
         <Route path="/payment-return" element={<OrderSuccessPage />} />
         <Route path="/orders" element={<OrderHistoryPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
         
         {/* Informational Subpages */}
         <Route path="/about" element={<AboutPage />} />

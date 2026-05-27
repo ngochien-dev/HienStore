@@ -48,4 +48,12 @@ public class OrderController {
             @PathVariable Long orderId) {
         return ResponseEntity.ok(orderService.getOrderById(orderId, userDetails.getUsername()));
     }
+
+    @Operation(summary = "Cancel an order")
+    @PostMapping("/{orderId}/cancel")
+    public ResponseEntity<OrderDto> cancelOrder(
+            @AuthenticationPrincipal UserDetails userDetails,
+            @PathVariable Long orderId) {
+        return ResponseEntity.ok(orderService.cancelOrder(orderId, userDetails.getUsername()));
+    }
 }

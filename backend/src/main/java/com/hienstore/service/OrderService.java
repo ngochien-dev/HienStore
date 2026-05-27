@@ -136,6 +136,29 @@ public class OrderService {
         return orderMapper.toDto(order);
     }
 
+    @Transactional
+    public OrderDto cancelOrder(Long orderId, String username) {
+        Order order = orderRepository.findByIdAndUserAccountUsername(orderId, username)
+                .orElseThrow(() -> new RuntimeException("Order not found or access denied"));
+        
+        if (order.getStatus() != OrderStatus.PENDING) {
+            throw new RuntimeException("Chỉ có thể hủy đơn hàng ở trạng thái Chờ xác nhận");
+        }
+        
+        order.setStatus(OrderStatus.CANCELLED);
+        
+        // Hoàn kho
+        for (OrderItem orderItem : order.getItems()) {
+            ProductVariant variant = orderItem.getProductVariant();
+            if (variant != null) {
+                variant.setStockQuantity(variant.getStockQuantity() + orderItem.getQuantity());
+                productVariantRepository.save(variant);
+            }
+        }
+        
+        return orderMapper.toDto(orderRepository.save(order));
+    }
+
     // Admin methods
     @Transactional(readOnly = true)
     public Page<OrderDto> getAllOrders(Pageable pageable) {
