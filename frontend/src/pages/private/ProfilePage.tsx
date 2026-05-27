@@ -35,8 +35,8 @@ export const ProfilePage = () => {
                   <div className="flex items-center p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700">
                     <User className="w-5 h-5 text-gray-400 mr-4" />
                     <div>
-                      <p className="text-sm text-gray-500 dark:text-gray-400">Tên đăng nhập</p>
-                      <p className="font-medium">{user.username}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Họ và tên</p>
+                      <p className="font-medium">{user.fullName}</p>
                     </div>
                   </div>
 
@@ -61,7 +61,7 @@ export const ProfilePage = () => {
                     <div>
                       <p className="text-sm text-gray-500 dark:text-gray-400">Vai trò</p>
                       <p className="font-medium inline-flex items-center gap-2">
-                        {user.roles.includes('ROLE_ADMIN') ? (
+                        {user.role === 'ADMIN' ? (
                           <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded text-xs font-bold">ADMIN</span>
                         ) : (
                           <span className="bg-gray-200 text-gray-700 px-2 py-0.5 rounded text-xs font-bold">CUSTOMER</span>
