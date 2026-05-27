@@ -34,6 +34,8 @@ public class OrderService {
     private final CouponRepository couponRepository;
     private final EmailService emailService;
 
+    private final NotificationService notificationService;
+
     @Transactional
     public OrderDto createOrder(String username, OrderRequest request) {
         User user = userRepository.findByAccountUsername(username)
@@ -127,6 +129,14 @@ public class OrderService {
             );
         }
 
+        notificationService.createNotification(
+            user,
+            "Đặt hàng thành công",
+            "Đơn hàng #" + savedOrder.getId() + " của bạn đã được tạo thành công.",
+            "ORDER_STATUS",
+            "/profile/orders"
+        );
+
         // Clear cart
         cartItemRepository.deleteAll(cartItems);
         cart.getItems().clear();
@@ -168,6 +178,14 @@ public class OrderService {
             }
         }
         
+        notificationService.createNotification(
+            order.getUser(),
+            "Đơn hàng đã hủy",
+            "Đơn hàng #" + order.getId() + " đã được hủy thành công.",
+            "ORDER_STATUS",
+            "/profile/orders"
+        );
+        
         return orderMapper.toDto(orderRepository.save(order));
     }
 
@@ -200,6 +218,8 @@ public class OrderService {
             }
         }
         
+        boolean statusChanged = status != null && status != order.getStatus();
+        
         if (status != null) {
             order.setStatus(status);
         }
@@ -207,7 +227,28 @@ public class OrderService {
             order.setPaymentStatus(paymentStatus);
         }
         
-        return orderMapper.toDto(orderRepository.save(order));
+        Order savedOrder = orderRepository.save(order);
+        
+        if (statusChanged) {
+            String statusMsg = "";
+            switch (status) {
+                case PROCESSING: statusMsg = "đang được xử lý"; break;
+                case SHIPPING: statusMsg = "đang được giao đến bạn"; break;
+                case DELIVERED: statusMsg = "đã giao thành công"; break;
+                case CANCELLED: statusMsg = "đã bị hủy"; break;
+                default: statusMsg = "đã cập nhật trạng thái mới";
+            }
+            
+            notificationService.createNotification(
+                savedOrder.getUser(),
+                "Cập nhật đơn hàng",
+                "Đơn hàng #" + savedOrder.getId() + " " + statusMsg,
+                "ORDER_STATUS",
+                "/profile/orders"
+            );
+        }
+        
+        return orderMapper.toDto(savedOrder);
     }
 
     @Transactional(readOnly = true)

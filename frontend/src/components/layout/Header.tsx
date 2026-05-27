@@ -5,6 +5,7 @@ import { useAppSelector, useAppDispatch } from '../../app/hooks'
 import { logout } from '../../features/auth/authSlice'
 import { fetchCart } from '../../features/cart/cartSlice'
 import { fetchWishlistIds } from '../../features/wishlist/wishlistSlice'
+import { NotificationDropdown } from '../features/user/NotificationDropdown'
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -186,6 +187,8 @@ export const Header = () => {
                 >
                   <Heart size={20} />
                 </Link>
+                
+                <NotificationDropdown />
                 
                 <Link 
                   to="/orders" 

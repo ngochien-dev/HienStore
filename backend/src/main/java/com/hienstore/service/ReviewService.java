@@ -25,6 +25,7 @@ public class ReviewService {
     private final com.hienstore.repository.OrderRepository orderRepository;
     private final ReviewMapper reviewMapper;
     private final EmailService emailService;
+    private final NotificationService notificationService;
 
     @Transactional(readOnly = true)
     public Page<ReviewDto> getProductReviews(Long productId, Pageable pageable) {
@@ -140,8 +141,18 @@ public class ReviewService {
         review.setRepliedAt(java.time.LocalDateTime.now());
         Review savedReview = reviewRepository.save(review);
 
-        // Send email notification to user
         User user = review.getUser();
+
+        // In-App Notification
+        notificationService.createNotification(
+            user,
+            "Quản trị viên đã trả lời",
+            "Quản trị viên vừa trả lời đánh giá của bạn cho sản phẩm " + review.getProduct().getName(),
+            "REVIEW_REPLY",
+            "/product/" + review.getProduct().getSlug()
+        );
+
+        // Send email notification to user
         if (user.getEmail() != null && !user.getEmail().isEmpty()) {
             String fullName = user.getFirstName() + (user.getLastName() != null ? " " + user.getLastName() : "");
             emailService.sendReviewReplyEmail(
