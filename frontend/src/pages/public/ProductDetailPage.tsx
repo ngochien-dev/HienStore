@@ -1,15 +1,18 @@
-import { useState, useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
+import { ShoppingCart, Heart, Share2, Shield, Truck, RotateCcw, Check, ChevronRight, Loader2, ArrowLeft, Star, ShieldCheck, Plus, Minus, ShoppingBag, CheckCircle, MessageSquare } from 'lucide-react'
 import api from '../../api/axiosClient'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { addToCart } from '../../features/cart/cartSlice'
-import { Loader2, ArrowLeft, Star, ShieldCheck, Truck, Plus, Minus, ShoppingBag, CheckCircle, MessageSquare } from 'lucide-react'
+import { toggleWishlistItem } from '../../features/wishlist/wishlistSlice'
 
 export const ProductDetailPage = () => {
   const { slug } = useParams<{ slug: string }>()
   const navigate = useNavigate()
   const location = useLocation()
   const dispatch = useAppDispatch()
+  const { isAuthenticated } = useAppSelector((state) => state.auth)
+  const { items: wishlistItems } = useAppSelector(state => state.wishlist)
   
   const [product, setProduct] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -307,18 +310,27 @@ export const ProductDetailPage = () => {
           </div>
 
           {/* Main Button */}
-          <button 
-            onClick={handleAddToCart}
-            disabled={isAdding || !selectedVariant || selectedVariant.stockQuantity < 1}
-            className="w-full bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold py-4.5 px-8 rounded-2xl flex items-center justify-center gap-2.5 transition-all duration-300 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 shadow-lg shadow-indigo-600/20"
-          >
-            {isAdding ? (
-              <Loader2 className="animate-spin" size={20} />
-            ) : (
-              <ShoppingBag size={20} />
-            )}
-            Thêm vào giỏ hàng
-          </button>
+          <div className="flex gap-4">
+            <button 
+              onClick={handleAddToCart}
+              disabled={isAdding || !selectedVariant || selectedVariant.stockQuantity < 1}
+              className="flex-1 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold py-4.5 px-8 rounded-2xl flex items-center justify-center gap-2.5 transition-all duration-300 active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 shadow-lg shadow-indigo-600/20"
+            >
+              {isAdding ? (
+                <Loader2 className="animate-spin" size={20} />
+              ) : (
+                <ShoppingBag size={20} />
+              )}
+              {selectedVariant && selectedVariant.stockQuantity < 1 ? 'Hết hàng' : 'Thêm vào giỏ hàng'}
+            </button>
+            <button 
+              onClick={handleToggleWishlist}
+              className="w-16 h-16 flex items-center justify-center border-2 border-gray-200 dark:border-gray-700 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors bg-white dark:bg-slate-900 shadow-sm"
+              title="Yêu thích"
+            >
+              <Heart size={24} className={isLiked ? 'text-rose-500 fill-rose-500' : 'text-gray-400'} />
+            </button>
+          </div>
           
           {/* Commitments Banner */}
           <div className="grid grid-cols-2 gap-4 border-t border-slate-100 dark:border-slate-800/80 pt-6">

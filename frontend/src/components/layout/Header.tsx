@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { ShoppingCart, User, Menu, X, Sun, Moon, LogOut, Package, Shield } from 'lucide-react'
+import { ShoppingCart, User, Menu, X, Sun, Moon, LogOut, Package, Shield, Heart } from 'lucide-react'
 import { useAppSelector, useAppDispatch } from '../../app/hooks'
 import { logout } from '../../features/auth/authSlice'
 import { fetchCart } from '../../features/cart/cartSlice'
+import { fetchWishlistIds } from '../../features/wishlist/wishlistSlice'
 
 export const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
@@ -22,6 +23,7 @@ export const Header = () => {
   useEffect(() => {
     if (isAuthenticated) {
       dispatch(fetchCart())
+      dispatch(fetchWishlistIds())
     }
   }, [isAuthenticated, dispatch])
 
@@ -175,6 +177,14 @@ export const Header = () => {
                   title="Hồ sơ cá nhân"
                 >
                   <User size={20} />
+                </Link>
+
+                <Link 
+                  to="/wishlist" 
+                  className="p-2 text-slate-600 dark:text-slate-300 hover:text-rose-500 dark:hover:text-rose-400 hover:bg-slate-100 dark:hover:bg-slate-800/80 rounded-xl transition-all duration-300" 
+                  title="Sản phẩm yêu thích"
+                >
+                  <Heart size={20} />
                 </Link>
                 
                 <Link 

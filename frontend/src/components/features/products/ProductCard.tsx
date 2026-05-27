@@ -1,5 +1,7 @@
-import { Link } from 'react-router-dom'
-import { Eye, ShoppingBag } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { Eye, ShoppingBag, Heart } from 'lucide-react'
+import { useAppDispatch, useAppSelector } from '../../../app/hooks'
+import { toggleWishlistItem } from '../../../features/wishlist/wishlistSlice'
 
 export interface ProductCardProps {
   product: {
@@ -13,6 +15,22 @@ export interface ProductCardProps {
 }
 
 export const ProductCard = ({ product }: ProductCardProps) => {
+  const dispatch = useAppDispatch()
+  const navigate = useNavigate()
+  const { items: wishlistItems } = useAppSelector(state => state.wishlist)
+  const { isAuthenticated } = useAppSelector(state => state.auth)
+  
+  const isLiked = wishlistItems.includes(product.id)
+
+  const handleToggleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault()
+    if (!isAuthenticated) {
+      navigate('/login')
+      return
+    }
+    dispatch(toggleWishlistItem(product.id))
+  }
+
   const primaryImage = product.images?.find(img => img.isPrimary)?.imageUrl 
     || product.images?.[0]?.imageUrl 
     || 'https://placehold.co/400x500/f3f4f6/9ca3af?text=No+Image'
@@ -45,6 +63,12 @@ export const ProductCard = ({ product }: ProductCardProps) => {
             <Eye size={14} />
             Xem chi tiết
           </Link>
+          <button 
+            onClick={handleToggleWishlist}
+            className="flex items-center justify-center w-10 h-10 bg-white text-rose-500 rounded-full shadow-lg hover:bg-slate-900 hover:text-rose-400 transform translate-y-4 group-hover:translate-y-0 transition-all duration-300"
+          >
+            <Heart size={16} className={isLiked ? 'fill-rose-500 text-rose-500' : ''} />
+          </button>
         </div>
 
         {/* Category Tag */}
