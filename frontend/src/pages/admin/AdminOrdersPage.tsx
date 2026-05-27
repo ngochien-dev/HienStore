@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useAppSelector, useAppDispatch } from '../../app/hooks'
 import { fetchAdminOrders, updateOrderStatus } from '../../features/order/orderSlice'
-import { Loader2, Search, Edit2 } from 'lucide-react'
+import { Loader2, Search, Edit2, Eye } from 'lucide-react'
+import { OrderDetailsModal } from '../../components/features/admin/OrderDetailsModal'
 
 export const AdminOrdersPage = () => {
   const dispatch = useAppDispatch()
@@ -9,6 +10,8 @@ export const AdminOrdersPage = () => {
   const [editingOrderId, setEditingOrderId] = useState<number | null>(null)
   const [newStatus, setNewStatus] = useState<string>('')
   const [newPaymentStatus, setNewPaymentStatus] = useState<string>('')
+  const [selectedOrder, setSelectedOrder] = useState<any>(null)
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false)
 
   useEffect(() => {
     dispatch(fetchAdminOrders({ page: 0, size: 20 }))
@@ -165,13 +168,25 @@ export const AdminOrdersPage = () => {
                         </button>
                       </div>
                     ) : (
-                      <button 
-                        onClick={() => handleEditClick(order)}
-                        className="text-gray-400 hover:text-indigo-600 p-1"
-                        title="Cập nhật trạng thái"
-                      >
-                        <Edit2 size={16} />
-                      </button>
+                      <div className="flex justify-end gap-2">
+                        <button 
+                          onClick={() => handleEditClick(order)}
+                          className="text-gray-400 hover:text-indigo-600 p-1"
+                          title="Cập nhật trạng thái"
+                        >
+                          <Edit2 size={16} />
+                        </button>
+                        <button 
+                          onClick={() => {
+                            setSelectedOrder(order)
+                            setIsDetailsModalOpen(true)
+                          }}
+                          className="text-gray-400 hover:text-blue-600 p-1"
+                          title="Xem chi tiết"
+                        >
+                          <Eye size={16} />
+                        </button>
+                      </div>
                     )}
                   </td>
                 </tr>
@@ -198,6 +213,12 @@ export const AdminOrdersPage = () => {
           </div>
         </div>
       </div>
+
+      <OrderDetailsModal 
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+        order={selectedOrder}
+      />
     </div>
   )
 }
