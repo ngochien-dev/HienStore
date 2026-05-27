@@ -56,6 +56,12 @@ public class ProductService {
                 .map(productMapper::toDto);
     }
 
+    @Transactional(readOnly = true)
+    public Page<ProductDto> filterProducts(Long categoryId, java.math.BigDecimal minPrice, java.math.BigDecimal maxPrice, String keyword, Pageable pageable) {
+        return productRepository.filterProducts(categoryId, minPrice, maxPrice, keyword != null && !keyword.trim().isEmpty() ? keyword.trim() : null, pageable)
+                .map(productMapper::toDto);
+    }
+
     @CacheEvict(value = "products", allEntries = true)
     @Transactional
     public ProductDto createProduct(com.hienstore.dto.request.ProductRequest request) {

@@ -63,4 +63,24 @@ public class ProductController {
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(productService.searchProducts(keyword, pageable));
     }
+
+    @Operation(summary = "Filter products")
+    @GetMapping("/filter")
+    public ResponseEntity<Page<ProductDto>> filterProducts(
+            @RequestParam(required = false) Long categoryId,
+            @RequestParam(required = false) java.math.BigDecimal minPrice,
+            @RequestParam(required = false) java.math.BigDecimal maxPrice,
+            @RequestParam(required = false) String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "12") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction) {
+
+        Sort sort = direction.equalsIgnoreCase(Sort.Direction.ASC.name())
+                ? Sort.by(sortBy).ascending()
+                : Sort.by(sortBy).descending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+        return ResponseEntity.ok(productService.filterProducts(categoryId, minPrice, maxPrice, keyword, pageable));
+    }
 }
