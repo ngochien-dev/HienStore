@@ -31,6 +31,11 @@ export const AdminChatPage = () => {
   
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const stompClient = useRef<Client | null>(null)
+  const selectedUserRef = useRef<ChatUser | null>(null)
+
+  useEffect(() => {
+    selectedUserRef.current = selectedUser
+  }, [selectedUser])
 
   useEffect(() => {
     fetchUsers()
@@ -93,7 +98,8 @@ export const AdminChatPage = () => {
           const receivedMessage = JSON.parse(message.body) as ChatMessage
           
           // Add to current open chat if it matches the selected user
-          if (selectedUser && (receivedMessage.senderEmail === selectedUser.email || receivedMessage.recipientEmail === selectedUser.email)) {
+          const currentUser = selectedUserRef.current
+          if (currentUser && (receivedMessage.senderEmail === currentUser.email || receivedMessage.recipientEmail === currentUser.email)) {
              setMessages(prev => [...prev, receivedMessage])
           }
           
