@@ -30,6 +30,18 @@ export const ProductDetailPage = () => {
   const [commentInput, setCommentInput] = useState('')
   const [isSubmittingReview, setIsSubmittingReview] = useState(false)
 
+  const isLiked = product ? wishlistItems.includes(product.id) : false;
+
+  const handleToggleWishlist = () => {
+    if (!isAuthenticated) {
+      navigate('/login')
+      return
+    }
+    if (product) {
+      dispatch(toggleWishlistItem(product.id))
+    }
+  }
+
   useEffect(() => {
     const fetchProduct = async () => {
       try {
