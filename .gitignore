@@ -21,3 +21,6 @@ desktop.ini
 # === Logs ===
 *.log
 logs/
+
+# === Backend Config ===
+backend/src/main/resources/application.yml
