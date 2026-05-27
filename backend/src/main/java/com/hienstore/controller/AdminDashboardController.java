@@ -19,7 +19,7 @@ public class AdminDashboardController {
     
     private final DashboardService dashboardService;
 
-    @GetMapping
+    @GetMapping("/stats")
     public ResponseEntity<DashboardDto> getDashboardStats() {
         return ResponseEntity.ok(dashboardService.getDashboardStats());
     }

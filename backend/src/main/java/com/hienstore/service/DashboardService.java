@@ -59,8 +59,8 @@ public class DashboardService {
         for (int i = 6; i >= 0; i--) {
             LocalDate targetDate = today.minusDays(i);
             BigDecimal dayRevenue = recentValidOrders.stream()
-                .filter(o -> o.getCreatedAt().toLocalDate().equals(targetDate))
-                .map(Order::getTotalAmount)
+                .filter(o -> o.getCreatedAt() != null && o.getCreatedAt().toLocalDate().equals(targetDate))
+                .map(o -> o.getTotalAmount() != null ? o.getTotalAmount() : BigDecimal.ZERO)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
                 
             revenueByDate.add(DashboardDto.RevenueByDate.builder()
