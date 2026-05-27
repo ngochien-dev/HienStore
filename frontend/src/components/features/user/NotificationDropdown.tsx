@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
-import { Bell, CheckCircle, Package, MessageSquare, Info, Loader2 } from 'lucide-react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Bell, Package, MessageSquare, Info, Loader2 } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 import api from '../../../api/axiosClient'
 import { useAppSelector } from '../../../app/hooks'
 import { Client } from '@stomp/stompjs'

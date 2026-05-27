@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { TrendingUp, Users, ShoppingBag, DollarSign, Package, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react'
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
+import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
 import api from '../../api/axiosClient'
 
 interface DashboardStats {
@@ -216,7 +216,7 @@ export const AdminDashboardPage = () => {
                   dx={-10}
                 />
                 <Tooltip 
-                  formatter={(value: number) => [formatPrice(value), 'Doanh thu']}
+                  formatter={(value: any) => [formatPrice(value), 'Doanh thu']}
                   labelStyle={{color: '#111827', fontWeight: 600}}
                   contentStyle={{borderRadius: '0.5rem', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'}}
                 />

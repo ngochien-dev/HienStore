@@ -39,7 +39,7 @@ export const LoginPage = () => {
       const { token, userId, email, fullName, role } = response.data
       
       dispatch(setCredentials({
-        user: { id: userId, email, fullName, role },
+        user: { id: userId, email, fullName, role } as any,
         token
       }))
       

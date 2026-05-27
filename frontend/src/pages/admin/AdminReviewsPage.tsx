@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { MessageSquare, Star, Reply, Trash2, Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react'
+import { MessageSquare, Star, Reply, Trash2, Loader2, Eye, EyeOff } from 'lucide-react'
 import api from '../../api/axiosClient'
 import { toast } from 'react-toastify'
 
@@ -15,8 +15,6 @@ interface Review {
   imageUrl: string | null
   isHidden: boolean
   replies: any[]
-  imageUrl: string | null
-  isHidden: boolean
 }
 
 export const AdminReviewsPage = () => {

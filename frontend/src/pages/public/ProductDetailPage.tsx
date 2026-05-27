@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
-import { ShoppingCart, Heart, Share2, Shield, Truck, RotateCcw, Check, ChevronRight, Loader2, ArrowLeft, Star, ShieldCheck, Plus, Minus, ShoppingBag, CheckCircle, MessageSquare, Image as ImageIcon, Trash2, Edit2, X } from 'lucide-react'
+import { Heart, Truck, Loader2, ArrowLeft, Star, ShieldCheck, Plus, Minus, ShoppingBag, CheckCircle, MessageSquare, Image as ImageIcon, Trash2, Edit2, X } from 'lucide-react'
 import api from '../../api/axiosClient'
 import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { addToCart } from '../../features/cart/cartSlice'
