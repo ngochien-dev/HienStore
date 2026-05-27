@@ -1,5 +1,4 @@
 import { useState, useEffect, useRef } from 'react'
-import { AdminLayout } from '../../components/layout/AdminLayout'
 import api from '../../api/axiosClient'
 import { useAppSelector } from '../../app/hooks'
 import { Client } from '@stomp/stompjs'
@@ -133,7 +132,6 @@ export const AdminChatPage = () => {
   }
 
   return (
-    <AdminLayout>
       <div className="h-[calc(100vh-8rem)] flex bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
         
         {/* Users List Sidebar */}
@@ -249,6 +247,5 @@ export const AdminChatPage = () => {
         </div>
         
       </div>
-    </AdminLayout>
   )
 }
