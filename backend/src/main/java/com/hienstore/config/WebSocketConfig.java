@@ -38,9 +38,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
             @Override
             public org.springframework.messaging.Message<?> preSend(org.springframework.messaging.Message<?> message, org.springframework.messaging.MessageChannel channel) {
                 org.springframework.messaging.simp.stomp.StompHeaderAccessor accessor =
-                        org.springframework.messaging.simp.stomp.StompHeaderAccessor.wrap(message);
+                        org.springframework.messaging.support.MessageHeaderAccessor.getAccessor(message, org.springframework.messaging.simp.stomp.StompHeaderAccessor.class);
 
-                if (org.springframework.messaging.simp.stomp.StompCommand.CONNECT.equals(accessor.getCommand())) {
+                if (accessor != null && org.springframework.messaging.simp.stomp.StompCommand.CONNECT.equals(accessor.getCommand())) {
                     java.util.List<String> authorization = accessor.getNativeHeader("Authorization");
                     if (authorization != null && !authorization.isEmpty()) {
                         String authHeader = authorization.get(0);
