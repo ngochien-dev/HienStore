@@ -74,7 +74,14 @@ export const CheckoutPage = () => {
       setFormData(prev => ({ ...prev, couponCode: response.data.code }))
       setCouponCodeInput('')
     } catch (error: any) {
-      setCouponError(error.response?.data?.message || typeof error.response?.data === 'string' ? error.response?.data : 'Mã giảm giá không hợp lệ')
+      let errorMsg = 'Mã giảm giá không hợp lệ'
+      const data = error.response?.data
+      if (typeof data === 'string') {
+        errorMsg = data
+      } else if (data && typeof data === 'object' && data.message) {
+        errorMsg = data.message
+      }
+      setCouponError(errorMsg)
       setAppliedCoupon(null)
       setFormData(prev => ({ ...prev, couponCode: '' }))
     } finally {
