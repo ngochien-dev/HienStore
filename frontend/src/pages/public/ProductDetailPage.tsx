@@ -29,7 +29,6 @@ export const ProductDetailPage = () => {
   const [ratingInput, setRatingInput] = useState(5)
   const [commentInput, setCommentInput] = useState('')
   const [isSubmittingReview, setIsSubmittingReview] = useState(false)
-  const { isAuthenticated } = useAppSelector((state) => state.auth)
 
   useEffect(() => {
     const fetchProduct = async () => {
