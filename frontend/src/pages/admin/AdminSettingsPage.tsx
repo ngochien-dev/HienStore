@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { Save, Key, Store, Globe, Mail } from 'lucide-react'
 import { Button } from '../../components/ui/Button'
 import { Input } from '../../components/ui/Input'
+import api from '../../api/axiosClient'
 
 export const AdminSettingsPage = () => {
   const [isLoading, setIsLoading] = useState(false)

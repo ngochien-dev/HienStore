@@ -296,9 +296,13 @@ export const ProductFormModal = ({ isOpen, onClose, onSuccess, product }: Produc
                     className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
                   >
                     <option value="">Chọn danh mục</option>
-                    {categories.map(c => (
-                      <option key={c.id} value={c.id}>{c.name}</option>
-                    ))}
+                    {categories
+                      .filter(c => c.isActive || c.id.toString() === formData.categoryId)
+                      .map(c => (
+                        <option key={c.id} value={c.id}>
+                          {c.name} {!c.isActive && '(Đã ẩn)'}
+                        </option>
+                      ))}
                   </select>
                 </div>
               </div>

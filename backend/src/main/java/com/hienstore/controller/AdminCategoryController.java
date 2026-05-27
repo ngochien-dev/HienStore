@@ -18,11 +18,22 @@ import org.springframework.web.bind.annotation.*;
 public class AdminCategoryController {
 
     private final CategoryService categoryService;
+    private final com.hienstore.repository.CategoryRepository categoryRepository;
 
     @PostMapping
     public ResponseEntity<CategoryDto> createCategory(@Valid @RequestBody CategoryRequest request) {
         CategoryDto category = categoryService.createCategory(request);
         return new ResponseEntity<>(category, HttpStatus.CREATED);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<?> getCategoryDebug(@PathVariable Long id) {
+        try {
+            java.util.Optional<com.hienstore.entity.Category> cat = categoryRepository.findById(id);
+            return ResponseEntity.ok(cat.isPresent() ? "Found: " + cat.get().getName() : "NOT FOUND IN DB");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Error: " + e.getMessage());
+        }
     }
 
     @PutMapping("/{id}")
