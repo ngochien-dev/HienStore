@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import api from '../../api/axiosClient'
-import { useAppDispatch } from '../../app/hooks'
+import { useAppDispatch, useAppSelector } from '../../app/hooks'
 import { addToCart } from '../../features/cart/cartSlice'
 import { Loader2, ArrowLeft, Star, ShieldCheck, Truck, Plus, Minus, ShoppingBag, CheckCircle, MessageSquare } from 'lucide-react'
 
