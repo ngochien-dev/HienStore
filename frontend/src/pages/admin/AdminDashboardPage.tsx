@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { TrendingUp, Users, ShoppingBag, DollarSign, Package, Clock, CheckCircle, XCircle, Loader2 } from 'lucide-react'
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts'
 import api from '../../api/axiosClient'
 
 interface DashboardStats {
@@ -11,6 +12,12 @@ interface DashboardStats {
   totalCustomers: number
   totalProducts: number
   recentOrders: RecentOrder[]
+  revenueByDate: RevenueByDate[]
+}
+
+interface RevenueByDate {
+  date: string
+  revenue: number
 }
 
 interface RecentOrder {
@@ -182,10 +189,46 @@ export const AdminDashboardPage = () => {
               </p>
             </div>
           )}
+          )}
+        </div>
+
+        {/* Revenue Chart */}
+        <div className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+          <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
+            <TrendingUp className="text-emerald-600 w-5 h-5" />
+            Doanh thu 7 ngày qua
+          </h3>
+          <div className="h-72 w-full">
+            <ResponsiveContainer width="100%" height="100%">
+              <AreaChart data={stats.revenueByDate} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                <defs>
+                  <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e5e7eb" />
+                <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{fill: '#6b7280', fontSize: 12}} dy={10} />
+                <YAxis 
+                  axisLine={false} 
+                  tickLine={false} 
+                  tick={{fill: '#6b7280', fontSize: 12}}
+                  tickFormatter={(value) => `${(value / 1000000).toFixed(1)}M`}
+                  dx={-10}
+                />
+                <Tooltip 
+                  formatter={(value: number) => [formatPrice(value), 'Doanh thu']}
+                  labelStyle={{color: '#111827', fontWeight: 600}}
+                  contentStyle={{borderRadius: '0.5rem', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)'}}
+                />
+                <Area type="monotone" dataKey="revenue" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorRevenue)" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* Recent Orders */}
-        <div className="lg:col-span-2 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+        <div className="lg:col-span-3 bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 mt-6">
           <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
             <ShoppingBag className="text-indigo-600 w-5 h-5" />
             Đơn hàng gần đây

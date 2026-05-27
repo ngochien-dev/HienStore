@@ -31,4 +31,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     long countByStatus(OrderStatus status);
 
     List<Order> findTop10ByOrderByCreatedAtDesc();
+
+    List<Order> findByCreatedAtAfterAndStatusNot(java.time.LocalDateTime startDate, OrderStatus status);
 }
