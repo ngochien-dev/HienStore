@@ -41,9 +41,19 @@ export const CheckoutPage = () => {
   useEffect(() => {
     if (currentOrder) {
       if (currentOrder.paymentMethod === 'VNPAY') {
-        // We will handle VNPAY redirect here later
-        // For now, redirect to success page
-        navigate('/payment-return?status=success&orderId=' + currentOrder.id)
+        // Fetch VNPay URL
+        api.get(`/api/payment/create-url?orderId=${currentOrder.id}`)
+          .then(res => {
+            if (res.data && res.data.url) {
+              window.location.href = res.data.url
+            } else {
+              navigate('/payment-return?status=success&orderId=' + currentOrder.id)
+            }
+          })
+          .catch(err => {
+            console.error('Lỗi khi lấy link thanh toán:', err)
+            navigate('/payment-return?status=success&orderId=' + currentOrder.id)
+          })
       } else {
         navigate('/payment-return?status=success&orderId=' + currentOrder.id)
       }

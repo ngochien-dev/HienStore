@@ -1,5 +1,6 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
+import api from '../../api/axiosClient'
 import { CheckCircle, XCircle, ArrowRight } from 'lucide-react'
 import { useAppDispatch } from '../../app/hooks'
 import { clearCurrentOrder } from '../../features/order/orderSlice'
@@ -9,15 +10,49 @@ export const OrderSuccessPage = () => {
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
   
-  const status = searchParams.get('status')
-  const orderId = searchParams.get('orderId')
+  const [status, setStatus] = useState<string | null>(searchParams.get('status'))
+  const [orderId, setOrderId] = useState<string | null>(searchParams.get('orderId'))
+  const [message, setMessage] = useState<string | null>(null)
+  const [isValidating, setIsValidating] = useState(false)
 
   useEffect(() => {
-    // Clear current order from state after showing success to avoid looping back
     dispatch(clearCurrentOrder())
-  }, [dispatch])
+    
+    // Check if this is a return from VNPay
+    const vnp_ResponseCode = searchParams.get('vnp_ResponseCode')
+    if (vnp_ResponseCode) {
+      setIsValidating(true)
+      api.get(`/api/payment/vnpay-return?${searchParams.toString()}`)
+        .then(res => {
+          if (res.data.success) {
+            setStatus('success')
+            setOrderId(res.data.orderId.toString())
+          } else {
+            setStatus('failed')
+            setMessage(res.data.message || 'Giao dịch không thành công')
+          }
+        })
+        .catch(err => {
+          console.error(err)
+          setStatus('failed')
+          setMessage('Lỗi khi xác thực thanh toán')
+        })
+        .finally(() => {
+          setIsValidating(false)
+        })
+    }
+  }, [dispatch, searchParams])
 
   const isSuccess = status === 'success'
+
+  if (isValidating) {
+    return (
+      <div className="min-h-[70vh] flex flex-col items-center justify-center p-4">
+        <div className="w-16 h-16 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-lg text-gray-600 dark:text-gray-300">Đang xác thực giao dịch từ VNPay...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-[70vh] flex flex-col items-center justify-center p-4">
@@ -37,7 +72,7 @@ export const OrderSuccessPage = () => {
         </p>
       ) : (
         <p className="text-gray-500 text-center max-w-md mb-8 text-lg">
-          Đã có lỗi xảy ra trong quá trình thanh toán. Vui lòng thử lại hoặc chọn phương thức thanh toán khác.
+          {message || 'Đã có lỗi xảy ra trong quá trình thanh toán. Vui lòng thử lại hoặc chọn phương thức thanh toán khác.'}
         </p>
       )}
 
